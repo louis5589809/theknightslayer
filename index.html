@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MORGATH: THE FORGOTTEN KEEP</title>
+    <title>MORGATH: REALM OF THE FORGOTTEN KEEP</title>
     <style>
+        /*
+         * ====================================================================
+         * 1. GLOBAL STYLES & RETRO CRT SCANLINE OVERLAYS
+         * ====================================================================
+         */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -16,9 +21,9 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #050406;
+            background-color: #030204;
             font-family: 'Courier New', Courier, monospace;
-            color: #d8d8d8;
+            color: #e0e0e0;
         }
         #viewport-container {
             position: relative;
@@ -31,39 +36,43 @@
             height: 100%;
         }
 
-        /* Scanline Overlay FX */
+        /* Scanline CRT Aesthetic Filter */
         .scanlines {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
             background-size: 100% 4px;
-            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.9);
             z-index: 10;
         }
 
-        /* Screen Flash Effects */
+        /* Screen Flash Dynamics */
         #damage-flash {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(220, 0, 0, 0.35);
+            background: rgba(220, 0, 0, 0.4);
             pointer-events: none;
             z-index: 15;
             opacity: 0;
-            transition: opacity 0.1s ease;
+            transition: opacity 0.08s ease;
         }
         #parry-flash {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(200, 230, 255, 0.45);
+            background: rgba(180, 220, 255, 0.5);
             pointer-events: none;
             z-index: 15;
             opacity: 0;
             transition: opacity 0.08s ease;
         }
 
-        /* Dynamic Heads-Up Display */
+        /*
+         * ====================================================================
+         * 2. HEADS-UP DISPLAY (HUD)
+         * ====================================================================
+         */
         #hud {
             position: absolute;
             top: 0; left: 0;
@@ -83,118 +92,130 @@
         }
 
         .title-box h1 {
-            font-size: 28px;
-            letter-spacing: 6px;
-            color: #b81d1d;
-            text-shadow: 0 0 12px rgba(184, 29, 29, 0.8), 2px 2px 0px #000;
+            font-size: 32px;
+            letter-spacing: 7px;
+            color: #c91a1a;
+            text-shadow: 0 0 16px rgba(201, 26, 26, 0.9), 2px 2px 0px #000;
             text-transform: uppercase;
         }
         .title-box p {
             font-size: 11px;
-            color: #888899;
+            color: #8a8aa3;
             letter-spacing: 3px;
             margin-top: 4px;
         }
 
         .bars-container {
-            width: 290px;
+            width: 320px;
         }
         .bar-wrap {
-            margin-bottom: 10px;
-            background: rgba(10, 8, 12, 0.88);
-            border: 1px solid #442020;
-            padding: 4px;
+            margin-bottom: 12px;
+            background: rgba(8, 6, 10, 0.9);
+            border: 1px solid #522020;
+            padding: 5px;
             position: relative;
         }
         .bar-label {
-            font-size: 10px;
+            font-size: 11px;
             letter-spacing: 1px;
-            color: #aaa;
+            color: #ccc;
             margin-bottom: 3px;
             display: flex;
             justify-content: space-between;
         }
         .bar-fill {
-            height: 14px;
+            height: 16px;
             transition: width 0.08s ease-out;
         }
-        #hp-fill { background: linear-gradient(90deg, #600000, #d91414); width: 100%; }
-        #stamina-fill { background: linear-gradient(90deg, #0e4d1d, #2bb550); width: 100%; }
+        #hp-fill { background: linear-gradient(90deg, #660000, #e61919); width: 100%; }
+        #stamina-fill { background: linear-gradient(90deg, #0e541f, #2dc457); width: 100%; }
 
         .souls-counter {
-            font-size: 15px;
-            color: #dfb85c;
+            font-size: 16px;
+            color: #e3be64;
             letter-spacing: 2px;
-            text-shadow: 1px 1px 3px #000;
-            margin-top: 6px;
+            text-shadow: 1px 1px 4px #000;
+            margin-top: 8px;
             font-weight: bold;
+        }
+
+        .camera-indicator {
+            position: absolute;
+            top: 130px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #7a2222;
+            color: #ffaaaa;
+            padding: 6px 12px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            pointer-events: auto;
+            cursor: pointer;
         }
 
         /* Boss Health Bar */
         #boss-hud {
             position: absolute;
-            bottom: 40px;
+            bottom: 45px;
             left: 50%;
             transform: translateX(-50%);
-            width: 65%;
-            max-width: 750px;
-            background: rgba(5, 5, 5, 0.92);
-            border: 2px solid #8c1616;
-            padding: 8px;
+            width: 70%;
+            max-width: 800px;
+            background: rgba(4, 4, 6, 0.95);
+            border: 2px solid #a31818;
+            padding: 10px;
             z-index: 20;
             display: none;
         }
         #boss-name {
-            font-size: 13px;
-            letter-spacing: 4px;
-            color: #e02828;
-            margin-bottom: 5px;
+            font-size: 14px;
+            letter-spacing: 5px;
+            color: #f02b2b;
+            margin-bottom: 6px;
             text-align: center;
             font-weight: bold;
         }
         #boss-bar-fill {
-            height: 16px;
-            background: linear-gradient(90deg, #700000, #e60000);
+            height: 18px;
+            background: linear-gradient(90deg, #800000, #ff0000);
             width: 100%;
             transition: width 0.1s linear;
         }
 
-        /* Reticle UI */
+        /* Reticles & Interaction Prompts */
         #crosshair {
             position: absolute;
             top: 50%; left: 50%;
             width: 6px; height: 6px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             transform: translate(-50%, -50%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 20;
-            transition: all 0.1s ease;
         }
         #crosshair.blocking {
-            width: 24px; height: 24px;
-            border: 2px solid rgba(120, 180, 255, 0.9);
+            width: 28px; height: 28px;
+            border: 2px solid rgba(130, 190, 255, 0.95);
             background: transparent;
             border-radius: 4px;
         }
         #lockon-reticle {
             position: absolute;
-            width: 36px; height: 36px;
+            width: 40px; height: 40px;
             border: 2px dashed #ff3333;
             transform: translate(-50%, -50%) rotate(45deg);
             pointer-events: none;
             z-index: 20;
             display: none;
         }
-
         #interaction-prompt {
             position: absolute;
             bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.85);
-            border: 1px solid #993333;
-            padding: 10px 20px;
+            background: rgba(0,0,0,0.88);
+            border: 1px solid #a33333;
+            padding: 10px 22px;
             font-size: 13px;
             color: #ffffff;
             letter-spacing: 2px;
@@ -202,41 +223,41 @@
             display: none;
         }
 
-        /* Dialog & Menu Modals */
+        /* Modals & Dialogs */
         .modal {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(10, 8, 14, 0.96);
-            border: 2px solid #7a1c1c;
+            border: 2px solid #8f1f1f;
             padding: 35px;
             text-align: center;
             z-index: 30;
-            box-shadow: 0 0 80px rgba(0,0,0,0.98);
-            max-width: 580px;
+            box-shadow: 0 0 90px rgba(0,0,0,0.98);
+            max-width: 600px;
             width: 90%;
         }
         .modal h2 {
-            color: #d62424;
-            font-size: 28px;
-            letter-spacing: 5px;
-            margin-bottom: 12px;
+            color: #e02626;
+            font-size: 30px;
+            letter-spacing: 6px;
+            margin-bottom: 14px;
             text-transform: uppercase;
         }
         .modal p {
             font-size: 13px;
             line-height: 1.6;
-            color: #9a9ab0;
+            color: #a0a0b8;
             margin-bottom: 20px;
         }
         .controls-list {
             text-align: left;
-            background: rgba(0,0,0,0.65);
+            background: rgba(0,0,0,0.7);
             padding: 16px;
-            border: 1px solid #332233;
-            margin-bottom: 20px;
+            border: 1px solid #382438;
+            margin-bottom: 22px;
             font-size: 12px;
-            color: #b0b0cc;
+            color: #b5b5d0;
         }
         .controls-list div {
             margin: 7px 0;
@@ -244,9 +265,9 @@
             justify-content: space-between;
         }
         .btn {
-            background: #3b0a0a;
-            border: 1px solid #882222;
-            color: #ececec;
+            background: #420c0c;
+            border: 1px solid #9e2828;
+            color: #eeeeee;
             padding: 12px 28px;
             font-family: inherit;
             font-size: 13px;
@@ -256,20 +277,20 @@
             margin: 5px;
         }
         .btn:hover {
-            background: #701414;
-            border-color: #d93030;
+            background: #801818;
+            border-color: #f03a3a;
             color: #fff;
         }
 
-        /* Damage Numbers */
+        /* Floating Damage Text */
         .damage-text {
             position: absolute;
             color: #ff3333;
             font-weight: bold;
-            font-size: 22px;
+            font-size: 26px;
             pointer-events: none;
             z-index: 25;
-            text-shadow: 2px 2px 3px #000;
+            text-shadow: 2px 2px 4px #000;
             transition: transform 0.6s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.6s ease;
         }
     </style>
@@ -293,7 +314,7 @@
                 </div>
                 <div class="bars-container">
                     <div class="bar-wrap">
-                        <div class="bar-label"><span>VITALITY</span><span id="hp-text">100/100</span></div>
+                        <div class="bar-label"><span>VITALITY</span><span id="hp-text">400/400</span></div>
                         <div id="hp-fill" class="bar-fill"></div>
                     </div>
                     <div class="bar-wrap">
@@ -305,6 +326,7 @@
                     </div>
                 </div>
             </div>
+            <div class="camera-indicator" id="cam-toggle-btn">CAMERA: 1ST PERSON [C]</div>
         </div>
 
         <div id="boss-hud">
@@ -315,17 +337,18 @@
         <!-- Start Screen -->
         <div id="start-modal" class="modal">
             <h2>MORGATH</h2>
-            <p>You enter the ruined keep. Dark abstract entities roam the court. Wield your torch light and greatsword to eliminate them.</p>
+            <p>Enter the ruined courtyard. Equipped with 3x Damage Blade & 400 HP Vitality. Toggle between First-Person and Third-Person perspective anytime.</p>
             <div class="controls-list">
                 <div><span>W A S D</span> <span>Move Knight</span></div>
+                <div><span>C</span> <span>Toggle Camera (1st / 3rd Person)</span></div>
                 <div><span>SPACEBAR</span> <span>Jump</span></div>
-                <div><span>ALT</span> <span>Dodge Roll</span></div>
-                <div><span>LEFT CLICK</span> <span>Sword Slash Combo</span></div>
+                <div><span>ALT / N</span> <span>Dodge Roll</span></div>
+                <div><span>LEFT CLICK</span> <span>3x Power Sword Combo</span></div>
                 <div><span>RIGHT CLICK</span> <span>Parry / Guard</span></div>
                 <div><span>TAB</span> <span>Lock-on Target</span></div>
-                <div><span>E</span> <span>Bonfire Shrine Upgrade</span></div>
+                <div><span>E</span> <span>Rest at Bonfire</span></div>
             </div>
-            <button class="btn" id="start-btn">AWAKEN KNIGHT</button>
+            <button class="btn" id="start-btn">ENTER KEEP</button>
         </div>
 
         <!-- Shrine Upgrade Menu -->
@@ -334,9 +357,9 @@
             <p>Spend souls to fortify your vessel before venturing deeper into the keep.</p>
             <p>Current Souls: <span id="shrine-souls">0</span></p>
             <div>
-                <button class="btn" id="upgrade-hp">+20 VITALITY (50 SOULS)</button>
-                <button class="btn" id="upgrade-stamina">+20 STAMINA (40 SOULS)</button>
-                <button class="btn" id="upgrade-dmg">+8 BLADE POWER (60 SOULS)</button>
+                <button class="btn" id="upgrade-hp">+50 VITALITY (50 SOULS)</button>
+                <button class="btn" id="upgrade-stamina">+25 STAMINA (40 SOULS)</button>
+                <button class="btn" id="upgrade-dmg">+25 BLADE POWER (60 SOULS)</button>
             </div>
             <br>
             <button class="btn" id="close-shrine-btn">LEAVE SHRINE</button>
@@ -354,24 +377,24 @@
     <script>
         /*
          * ====================================================================
-         * MORGATH ENGINE & ADVANCED COMBAT SYSTEM
+         * 3. MORGATH ENGINE CONFIGURATION & DATA STRUCTURES
          * ====================================================================
          */
 
         const CONFIG = {
-            renderScale: 1.0, // High Definition Crisp Renderer
-            fov: 72,
-            playerHeight: 1.7,
-            playerSpeed: 7.5,
-            sprintMultiplier: 1.45,
+            renderScale: 1.0,
+            fov: 75,
+            playerHeight: 1.8,
+            playerSpeed: 8.0,
+            sprintMultiplier: 1.5,
             gravity: 24.0,
-            jumpForce: 8.5,
-            maxHp: 100,
+            jumpForce: 9.0,
+            maxHp: 400, // ENHANCED: 400 HP Vitality
             maxStamina: 100,
-            staminaRegen: 32,
-            staminaAttackCost: 20,
-            staminaRollCost: 28,
-            baseDamage: 30
+            staminaRegen: 35,
+            staminaAttackCost: 18,
+            staminaRollCost: 25,
+            baseDamage: 90 // ENHANCED: 3x Sword Damage (90 Base)
         };
 
         const GAME = {
@@ -392,10 +415,15 @@
             lockTarget: null,
             nearShrine: false,
             bossSpawned: false,
-            boss: null
+            boss: null,
+            isThirdPerson: false // CAMERA MODE STATE
         };
 
-        // --- AUDIO ENGINE ---
+        /*
+         * ====================================================================
+         * 4. AUDIO SYNTHESIS ENGINE (PROCEDURAL SOUND FX)
+         * ====================================================================
+         */
         class AudioEngine {
             constructor() { this.ctx = null; }
             init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -405,14 +433,14 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(70, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.08);
+                osc.frequency.setValueAtTime(65, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.09);
                 gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.09);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.08);
+                osc.stop(this.ctx.currentTime + 0.09);
             }
 
             playSwordSwing() {
@@ -422,26 +450,26 @@
                 const filter = this.ctx.createBiquadFilter();
 
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(240, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.22);
+                osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.25);
 
                 filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
-                filter.frequency.linearRampToValueAtTime(200, this.ctx.currentTime + 0.22);
+                filter.frequency.setValueAtTime(1600, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(300, this.ctx.currentTime + 0.25);
 
-                gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
 
                 osc.connect(filter);
                 filter.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.22);
+                osc.stop(this.ctx.currentTime + 0.25);
             }
 
             playHitSound() {
                 if (!this.ctx) return;
-                const bufferSize = this.ctx.sampleRate * 0.12;
+                const bufferSize = this.ctx.sampleRate * 0.15;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
@@ -450,11 +478,11 @@
                 noise.buffer = buffer;
                 const filter = this.ctx.createBiquadFilter();
                 filter.type = 'bandpass';
-                filter.frequency.value = 600;
+                filter.frequency.value = 750;
 
                 const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.7, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
 
                 noise.connect(filter);
                 filter.connect(gain);
@@ -467,14 +495,14 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(950, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc.frequency.setValueAtTime(1100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.28);
+                gain.gain.setValueAtTime(0.9, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.28);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
+                osc.stop(this.ctx.currentTime + 0.28);
             }
 
             playPlayerHurt() {
@@ -482,14 +510,14 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(35, this.ctx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(30, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
+                osc.stop(this.ctx.currentTime + 0.3);
             }
 
             playAmbientDrone() {
@@ -497,12 +525,12 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(45, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(42, this.ctx.currentTime);
 
                 const filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(140, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+                filter.frequency.setValueAtTime(130, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
 
                 osc.connect(filter);
                 filter.connect(gain);
@@ -513,13 +541,16 @@
 
         const audio = new AudioEngine();
 
-        // --- THREE.JS SCENE & BRIGHT LIGHTING ---
+        /*
+         * ====================================================================
+         * 5. THREE.JS SCENE SETUP & PROPER LIGHTING
+         * ====================================================================
+         */
         const container = document.getElementById('viewport-container');
         const scene = new THREE.Scene();
 
-        // Medieval Atmosphere Fog
         scene.background = new THREE.Color(0x0a080d);
-        scene.fog = new THREE.FogExp2(0x0a080d, 0.02);
+        scene.fog = new THREE.FogExp2(0x0a080d, 0.018);
 
         const camera = new THREE.PerspectiveCamera(CONFIG.fov, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -531,26 +562,30 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        // Clear Ambient Light
-        const ambientLight = new THREE.AmbientLight(0x3a3245, 1.2);
+        // Clear Ambient & Directional Moonlight
+        const ambientLight = new THREE.AmbientLight(0x3e344a, 1.3);
         scene.add(ambientLight);
 
-        // Overhead Moonlight
-        const moonLight = new THREE.DirectionalLight(0x7788aa, 1.4);
-        moonLight.position.set(40, 80, 20);
+        const moonLight = new THREE.DirectionalLight(0x7788aa, 1.5);
+        moonLight.position.set(50, 90, 30);
         moonLight.castShadow = true;
         scene.add(moonLight);
 
-        // --- COURT ENVIRONMENT & BRAZIERS ---
+        /*
+         * ====================================================================
+         * 6. ENVIRONMENT ARCHITECTURE: KEEP COURTYARD & BRAZIERS
+         * ====================================================================
+         */
         const stoneMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2830, roughness: 0.8, flatShading: true });
         const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x1c1a22, roughness: 0.9, flatShading: true });
         const ironMaterial = new THREE.MeshStandardMaterial({ color: 0x2b2b35, roughness: 0.5, metalness: 0.7 });
+        const knightArmorMat = new THREE.MeshStandardMaterial({ color: 0x4a4a58, roughness: 0.3, metalness: 0.85 });
 
-        // Floor Ground
-        const floorGeo = new THREE.PlaneGeometry(160, 160, 32, 32);
+        // Courtyard Floor
+        const floorGeo = new THREE.PlaneGeometry(180, 180, 36, 36);
         const pos = floorGeo.attributes.position;
         for (let i = 0; i < pos.count; i++) {
-            pos.setY(i, (Math.random() - 0.5) * 0.3);
+            pos.setY(i, (Math.random() - 0.5) * 0.35);
         }
         floorGeo.computeVertexNormals();
 
@@ -559,7 +594,6 @@
         floorMesh.receiveShadow = true;
         scene.add(floorMesh);
 
-        // Courtyard Perimeter Walls & Torches
         function buildCourtyard() {
             const group = new THREE.Group();
 
@@ -571,35 +605,34 @@
                 group.add(mesh);
             };
 
-            createWall(0, -70, 140, 25, 4);
-            createWall(-70, 0, 4, 25, 140);
-            createWall(70, 0, 4, 25, 140);
-            createWall(0, 70, 140, 25, 4);
+            createWall(0, -80, 160, 28, 4);
+            createWall(-80, 0, 4, 28, 160);
+            createWall(80, 0, 4, 28, 160);
+            createWall(0, 80, 160, 28, 4);
 
             // Columns with Standing Torch Braziers
             const brazierPositions = [
-                [-25, -25], [25, -25], [-25, 25], [25, 25],
-                [-45, 0], [45, 0], [0, -45], [0, 45]
+                [-30, -30], [30, -30], [-30, 30], [30, 30],
+                [-50, 0], [50, 0], [0, -50], [0, 50]
             ];
 
             brazierPositions.forEach(([bx, bz]) => {
-                const col = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 10, 6), stoneMaterial);
-                col.position.set(bx, 5, bz);
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.6, 11, 6), stoneMaterial);
+                col.position.set(bx, 5.5, bz);
                 col.castShadow = true;
                 col.receiveShadow = true;
                 group.add(col);
 
-                // Brazier Fire Light
-                const fireLight = new THREE.PointLight(0xff6611, 4.5, 35);
-                fireLight.position.set(bx, 10.8, bz);
+                const fireLight = new THREE.PointLight(0xff6611, 5.0, 40);
+                fireLight.position.set(bx, 11.8, bz);
                 fireLight.castShadow = true;
                 group.add(fireLight);
 
                 const flameMesh = new THREE.Mesh(
-                    new THREE.DodecahedronGeometry(0.6),
+                    new THREE.DodecahedronGeometry(0.7),
                     new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true })
                 );
-                flameMesh.position.set(bx, 10.5, bz);
+                flameMesh.position.set(bx, 11.5, bz);
                 group.add(flameMesh);
             });
 
@@ -607,14 +640,14 @@
         }
         buildCourtyard();
 
-        // Destructibles & Bonfire Shrine
+        // Destructible Urns
         const destructibles = [];
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 20; i++) {
             const urn = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.4, 0.6, 1.2, 5),
+                new THREE.CylinderGeometry(0.45, 0.65, 1.3, 5),
                 new THREE.MeshStandardMaterial({ color: 0x4a3a30, roughness: 0.9 })
             );
-            urn.position.set((Math.random() - 0.5) * 90, 0.6, (Math.random() - 0.5) * 90);
+            urn.position.set((Math.random() - 0.5) * 100, 0.65, (Math.random() - 0.5) * 100);
             urn.castShadow = true;
             scene.add(urn);
             destructibles.push(urn);
@@ -622,99 +655,134 @@
 
         // Bonfire Shrine
         const shrineGroup = new THREE.Group();
-        const bonfireBase = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 0.6, 6), stoneMaterial);
-        bonfireBase.position.y = 0.3;
+        const bonfireBase = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.4, 0.7, 6), stoneMaterial);
+        bonfireBase.position.y = 0.35;
         shrineGroup.add(bonfireBase);
 
-        const bonfireCoals = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9), new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true }));
-        bonfireCoals.position.y = 0.9;
+        const bonfireCoals = new THREE.Mesh(new THREE.DodecahedronGeometry(1.0), new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true }));
+        bonfireCoals.position.y = 1.0;
         shrineGroup.add(bonfireCoals);
 
-        const shrineLight = new THREE.PointLight(0xff6600, 6.0, 40);
-        shrineLight.position.set(0, 2.5, 0);
+        const shrineLight = new THREE.PointLight(0xff6600, 7.0, 45);
+        shrineLight.position.set(0, 2.8, 0);
         shrineGroup.add(shrineLight);
 
         shrineGroup.position.set(0, 0, 0);
         scene.add(shrineGroup);
 
-        // --- PLAYER RIG: DYNAMIC HELD TORCH & SWORD SLASH ARC ---
+        /*
+         * ====================================================================
+         * 7. PLAYER RIG & KNIGHT MESH (1ST & 3RD PERSON DYNAMICS)
+         * ====================================================================
+         */
         const playerGroup = new THREE.Group();
-        playerGroup.position.set(0, CONFIG.playerHeight, 25);
+        playerGroup.position.set(0, CONFIG.playerHeight, 30);
         scene.add(playerGroup);
 
-        playerGroup.add(camera);
+        const cameraContainer = new THREE.Group();
+        playerGroup.add(cameraContainer);
+        cameraContainer.add(camera);
 
-        // Left Hand Torch (Bright Illumination)
+        // Knight Body Model (Visible in 3rd Person Mode)
+        const knightBody = new THREE.Group();
+        playerGroup.add(knightBody);
+
+        const chest = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.45), knightArmorMat);
+        chest.position.y = -0.65;
+        chest.castShadow = true;
+        knightBody.add(chest);
+
+        const helm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.5, 0.45), knightArmorMat);
+        helm.position.y = 0.15;
+        helm.castShadow = true;
+        knightBody.add(helm);
+
+        // Player Torch Light
         const torchGroup = new THREE.Group();
-        camera.add(torchGroup);
+        cameraContainer.add(torchGroup);
 
         const torchWood = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 5), ironMaterial);
         torchWood.rotation.x = Math.PI / 4;
         torchGroup.add(torchWood);
 
-        const torchFlameMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.15), new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true }));
+        const torchFlameMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16), new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true }));
         torchFlameMesh.position.set(0, 0.45, -0.3);
         torchGroup.add(torchFlameMesh);
 
-        // Powerful Player Point Light to see around properly
-        const playerTorchLight = new THREE.PointLight(0xff7722, 7.5, 60);
+        const playerTorchLight = new THREE.PointLight(0xff7722, 8.0, 65);
         playerTorchLight.position.set(0, 0.5, -0.3);
         playerTorchLight.castShadow = true;
         torchGroup.add(playerTorchLight);
 
         torchGroup.position.set(-0.55, -0.4, -0.6);
 
-        // Right Hand Greatsword Rig
+        // Player Greatsword Rig
         const swordGroup = new THREE.Group();
-        camera.add(swordGroup);
+        cameraContainer.add(swordGroup);
 
-        // Blade Arc Slash Trail Mesh
-        const slashTrailGeo = new THREE.RingGeometry(0.8, 1.8, 16, 1, 0, Math.PI * 0.85);
+        const slashTrailGeo = new THREE.RingGeometry(0.9, 2.0, 18, 1, 0, Math.PI * 0.85);
         const slashTrailMat = new THREE.MeshBasicMaterial({
-            color: 0x77ccff,
+            color: 0x66d9ff,
             side: THREE.DoubleSide,
             transparent: true,
             opacity: 0.0
         });
         const slashTrailMesh = new THREE.Mesh(slashTrailGeo, slashTrailMat);
-        slashTrailMesh.position.set(0, 0, -1.2);
+        slashTrailMesh.position.set(0, 0, -1.3);
         slashTrailMesh.rotation.x = Math.PI / 2;
-        camera.add(slashTrailMesh);
+        cameraContainer.add(slashTrailMesh);
 
         function buildGreatsword() {
             const blade = new THREE.Mesh(
-                new THREE.BoxGeometry(0.12, 1.9, 0.03),
-                new THREE.MeshStandardMaterial({ color: 0xb5c4d4, roughness: 0.2, metalness: 0.9, flatShading: true })
+                new THREE.BoxGeometry(0.13, 2.1, 0.035),
+                new THREE.MeshStandardMaterial({ color: 0xc2d4e5, roughness: 0.15, metalness: 0.95, flatShading: true })
             );
-            blade.position.y = 0.95;
+            blade.position.y = 1.05;
             blade.castShadow = true;
             swordGroup.add(blade);
 
-            const guard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.08, 0.09), ironMaterial);
+            const guard = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.08, 0.1), ironMaterial);
             guard.position.y = 0.03;
             swordGroup.add(guard);
 
-            const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.4, 6), ironMaterial);
-            handle.position.y = -0.2;
+            const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.42, 6), ironMaterial);
+            handle.position.y = -0.22;
             swordGroup.add(handle);
 
-            swordGroup.position.set(0.45, -0.42, -0.65);
+            swordGroup.position.set(0.48, -0.42, -0.68);
             swordGroup.rotation.set(0.2, -0.25, -0.15);
         }
         buildGreatsword();
 
-        // --- ABSTRACT ENEMIES SYSTEM ---
+        function updateCameraPerspective() {
+            if (GAME.isThirdPerson) {
+                camera.position.set(0, 1.2, 3.8);
+                knightBody.visible = true;
+                document.getElementById('cam-toggle-btn').innerText = "CAMERA: 3RD PERSON [C]";
+            } else {
+                camera.position.set(0, 0, 0);
+                knightBody.visible = false;
+                document.getElementById('cam-toggle-btn').innerText = "CAMERA: 1ST PERSON [C]";
+            }
+        }
+        updateCameraPerspective();
+
+        /*
+         * ====================================================================
+         * 8. ABSTRACT ENEMIES SYSTEM
+         * ====================================================================
+         */
         const enemies = [];
-        const enemyMat = new THREE.MeshStandardMaterial({ color: 0x15121c, roughness: 0.5, metalness: 0.3, flatShading: true });
+        const enemyMat = new THREE.MeshStandardMaterial({ color: 0x16131d, roughness: 0.5, metalness: 0.3, flatShading: true });
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
 
         class AbstractEnemy {
             constructor(type, x, z) {
                 this.type = type;
                 this.group = new THREE.Group();
-                this.hp = type === 2 ? 80 : 40;
+                this.hp = type === 2 ? 160 : 80;
                 this.maxHp = this.hp;
-                this.speed = type === 1 ? 4.5 : 2.8;
+                this.speed = type === 1 ? 4.8 : 3.0;
                 this.attackCooldown = 0;
                 this.isStaggered = false;
                 this.staggerTimer = 0;
@@ -727,35 +795,35 @@
 
             buildMesh() {
                 if (this.type === 0) {
-                    const geo = new THREE.CylinderGeometry(0.7, 1.3, 3.5, 6);
+                    const geo = new THREE.CylinderGeometry(0.75, 1.35, 3.6, 6);
                     const mesh = new THREE.Mesh(geo, enemyMat);
-                    mesh.position.y = 1.75;
+                    mesh.position.y = 1.8;
                     mesh.castShadow = true;
                     this.group.add(mesh);
 
-                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), eyeMat);
-                    eye.position.set(0, 2.4, 0.6);
+                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), eyeMat);
+                    eye.position.set(0, 2.5, 0.65);
                     this.group.add(eye);
                 } else if (this.type === 1) {
-                    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.0, 0), enemyMat);
-                    core.position.y = 2.0;
+                    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 0), enemyMat);
+                    core.position.y = 2.1;
                     core.castShadow = true;
                     this.group.add(core);
 
                     for (let i = 0; i < 4; i++) {
-                        const tendril = new THREE.Mesh(new THREE.ConeGeometry(0.18, 1.6, 4), eyeMat);
-                        tendril.position.set(Math.sin(i) * 0.7, 1.3, Math.cos(i) * 0.7);
+                        const tendril = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.7, 4), eyeMat);
+                        tendril.position.set(Math.sin(i) * 0.75, 1.35, Math.cos(i) * 0.75);
                         tendril.rotation.x = Math.PI;
                         this.group.add(tendril);
                     }
                 } else {
-                    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(1.8), enemyMat);
-                    body.position.y = 2.0;
+                    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(1.9), enemyMat);
+                    body.position.y = 2.1;
                     body.castShadow = true;
                     this.group.add(body);
 
-                    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.7), eyeMat);
-                    eye.position.set(0, 2.2, 1.3);
+                    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.22, 0.75), eyeMat);
+                    eye.position.set(0, 2.3, 1.35);
                     this.group.add(eye);
                 }
             }
@@ -774,7 +842,7 @@
 
                 this.group.position.y = Math.sin(Date.now() * 0.005 + enemyPos.x) * 0.25;
 
-                if (dist > 2.0) {
+                if (dist > 2.2) {
                     const dir = new THREE.Vector3().subVectors(playerPos, enemyPos);
                     dir.y = 0;
                     dir.normalize();
@@ -783,7 +851,7 @@
                 } else {
                     if (this.attackCooldown <= 0) {
                         this.attackPlayer();
-                        this.attackCooldown = 1.8;
+                        this.attackCooldown = 1.7;
                     }
                 }
 
@@ -794,7 +862,7 @@
                 if (GAME.isDodging) return;
 
                 const dist = this.group.position.distanceTo(playerGroup.position);
-                if (dist < 2.4) {
+                if (dist < 2.5) {
                     if (GAME.isParrying) {
                         audio.playParrySound();
                         triggerParryFlash();
@@ -803,7 +871,7 @@
                         return;
                     }
 
-                    let dmg = this.type === 2 ? 32 : 18;
+                    let dmg = this.type === 2 ? 35 : 20;
                     if (GAME.isBlocking) {
                         dmg = Math.round(dmg * 0.2);
                         audio.playHitSound();
@@ -824,13 +892,13 @@
 
                 this.hp -= amount;
                 audio.playHitSound();
-                createParticles(this.group.position, 0xdd0033);
+                createParticles(this.group.position, 0xee0033);
                 spawnDamageText(amount, this.group.position);
 
                 const pDir = new THREE.Vector3();
                 camera.getWorldDirection(pDir);
                 pDir.y = 0;
-                this.group.position.addScaledVector(pDir, 1.2);
+                this.group.position.addScaledVector(pDir, 1.3);
 
                 if (this.hp <= 0) this.die();
             }
@@ -838,11 +906,11 @@
             die() {
                 this.isDead = true;
                 scene.remove(this.group);
-                const soulGain = this.type === 2 ? 50 : 25;
+                const soulGain = this.type === 2 ? 60 : 30;
                 GAME.souls += soulGain;
                 updateHUD();
 
-                if (GAME.souls >= 100 && !GAME.bossSpawned) {
+                if (GAME.souls >= 150 && !GAME.bossSpawned) {
                     spawnBossMorgath();
                 }
 
@@ -852,14 +920,18 @@
 
         function spawnRandomEnemy() {
             const angle = Math.random() * Math.PI * 2;
-            const dist = 22 + Math.random() * 25;
+            const dist = 25 + Math.random() * 25;
             const type = Math.floor(Math.random() * 3);
             enemies.push(new AbstractEnemy(type, Math.sin(angle) * dist, Math.cos(angle) * dist));
         }
 
-        for (let i = 0; i < 8; i++) spawnRandomEnemy();
+        for (let i = 0; i < 9; i++) spawnRandomEnemy();
 
-        // --- BOSS ENCOUNTER ---
+        /*
+         * ====================================================================
+         * 9. BOSS ENCOUNTER SYSTEM
+         * ====================================================================
+         */
         function spawnBossMorgath() {
             GAME.bossSpawned = true;
             document.getElementById('boss-hud').style.display = 'block';
@@ -867,17 +939,17 @@
             const bossGroup = new THREE.Group();
             const bossMat = new THREE.MeshBasicMaterial({ color: 0xff1111, wireframe: true });
 
-            const bossCore = new THREE.Mesh(new THREE.OctahedronGeometry(4.0, 2), bossMat);
-            bossCore.position.y = 4.5;
+            const bossCore = new THREE.Mesh(new THREE.OctahedronGeometry(4.5, 2), bossMat);
+            bossCore.position.y = 5.0;
             bossGroup.add(bossCore);
 
-            bossGroup.position.set(0, 0, -45);
+            bossGroup.position.set(0, 0, -50);
             scene.add(bossGroup);
 
             GAME.boss = {
                 group: bossGroup,
-                hp: 400,
-                maxHp: 400,
+                hp: 600,
+                maxHp: 600,
                 isDead: false,
                 update: function(delta, playerPos) {
                     if (this.isDead) return;
@@ -885,9 +957,9 @@
                     bossCore.rotation.x += delta * 0.8;
 
                     const dist = bossGroup.position.distanceTo(playerPos);
-                    if (dist > 5.5) {
+                    if (dist > 6.0) {
                         const dir = new THREE.Vector3().subVectors(playerPos, bossGroup.position).normalize();
-                        bossGroup.position.addScaledVector(dir, 3.2 * delta);
+                        bossGroup.position.addScaledVector(dir, 3.5 * delta);
                     }
 
                     document.getElementById('boss-bar-fill').style.width = `${(this.hp / this.maxHp) * 100}%`;
@@ -908,28 +980,32 @@
             };
         }
 
-        // --- PARTICLES & SCREEN FX ---
+        /*
+         * ====================================================================
+         * 10. VISUAL PARTICLES & UI UPDATES
+         * ====================================================================
+         */
         const particles = [];
         function createParticles(pos, colorHex) {
-            const pGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+            const pGeo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
             const pMat = new THREE.MeshBasicMaterial({ color: colorHex });
-            for (let i = 0; i < 16; i++) {
+            for (let i = 0; i < 18; i++) {
                 const mesh = new THREE.Mesh(pGeo, pMat);
                 mesh.position.copy(pos);
-                mesh.position.y += 1.4;
+                mesh.position.y += 1.5;
                 const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 7,
-                    Math.random() * 5 + 1.5,
-                    (Math.random() - 0.5) * 7
+                    (Math.random() - 0.5) * 8,
+                    Math.random() * 6 + 1.5,
+                    (Math.random() - 0.5) * 8
                 );
                 scene.add(mesh);
-                particles.push({ mesh, vel, life: 0.45 });
+                particles.push({ mesh, vel, life: 0.5 });
             }
         }
 
         function spawnDamageText(amount, worldPos) {
             const screenPos = worldPos.clone();
-            screenPos.y += 2.2;
+            screenPos.y += 2.4;
             screenPos.project(camera);
             const x = (screenPos.x * .5 + .5) * window.innerWidth;
             const y = (-(screenPos.y * .5) + .5) * window.innerHeight;
@@ -942,7 +1018,7 @@
             container.appendChild(el);
 
             setTimeout(() => {
-                el.style.transform = 'translateY(-40px)';
+                el.style.transform = 'translateY(-45px)';
                 el.style.opacity = '0';
             }, 50);
 
@@ -971,7 +1047,11 @@
             document.getElementById('souls-val').innerText = GAME.souls;
         }
 
-        // --- CONTROLS & INPUT SYSTEM ---
+        /*
+         * ====================================================================
+         * 11. INPUT HANDLING & SWORD SLASH CONTROLS
+         * ====================================================================
+         */
         const keys = {};
         let yaw = 0;
         let pitch = 0;
@@ -981,12 +1061,21 @@
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
 
+            if (e.code === 'KeyC') {
+                GAME.isThirdPerson = !GAME.isThirdPerson;
+                updateCameraPerspective();
+            }
             if (e.code === 'AltLeft' || e.code === 'KeyN') performDodgeRoll();
             if (e.code === 'KeyE' && GAME.nearShrine) openShrineMenu();
             if (e.code === 'Tab') { e.preventDefault(); toggleLockOn(); }
         });
 
         document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+        document.getElementById('cam-toggle-btn').addEventListener('click', () => {
+            GAME.isThirdPerson = !GAME.isThirdPerson;
+            updateCameraPerspective();
+        });
 
         const startBtn = document.getElementById('start-btn');
         const startModal = document.getElementById('start-modal');
@@ -1023,7 +1112,7 @@
             pitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, pitch));
 
             playerGroup.rotation.y = yaw;
-            camera.rotation.x = pitch;
+            cameraContainer.rotation.x = pitch;
         });
 
         document.addEventListener('mousedown', (e) => {
@@ -1051,7 +1140,7 @@
 
         window.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        // --- FULL-SCREEN SWORD SWIPE COMBO SYSTEM ---
+        /* SWIPE SLASH ATTACK WITH TRIPLE DAMAGE SCALING */
         function triggerFullSwordSlashCombo() {
             GAME.isAttacking = true;
             GAME.attackProgress = 0;
@@ -1060,34 +1149,36 @@
 
             audio.playSwordSwing();
 
-            // Cycle 3 distinct slash animations (Horizontal -> Diagonal -> Overhead)
+            // 3-Stage Attack Combo
             GAME.attackComboStep = (GAME.attackComboStep + 1) % 3;
 
-            // Activate Slash Arc Trail Visual
-            slashTrailMat.opacity = 0.85;
-            slashTrailMesh.rotation.z = GAME.attackComboStep * 1.2;
+            slashTrailMat.opacity = 0.9;
+            slashTrailMesh.rotation.z = GAME.attackComboStep * 1.25;
 
-            const attackRange = 3.5;
+            const attackRange = 3.8;
             const pPos = playerGroup.position;
 
             enemies.forEach(enemy => {
                 if (enemy.isDead) return;
                 if (pPos.distanceTo(enemy.group.position) <= attackRange) {
-                    enemy.takeDamage(GAME.damage + Math.floor(Math.random() * 10));
+                    // TRIPLE DAMAGE COMPUTATION (Base 90 + combo variance)
+                    const comboMultiplier = 1.0 + (GAME.attackComboStep * 0.35);
+                    const finalDmg = Math.round(GAME.damage * comboMultiplier);
+                    enemy.takeDamage(finalDmg);
                 }
             });
 
-            if (GAME.boss && !GAME.boss.isDead && pPos.distanceTo(GAME.boss.group.position) <= 6.0) {
+            if (GAME.boss && !GAME.boss.isDead && pPos.distanceTo(GAME.boss.group.position) <= 6.5) {
                 GAME.boss.takeDamage(GAME.damage);
             }
 
             for (let i = destructibles.length - 1; i >= 0; i--) {
                 const obj = destructibles[i];
-                if (pPos.distanceTo(obj.position) < 3.0) {
+                if (pPos.distanceTo(obj.position) < 3.2) {
                     scene.remove(obj);
                     createParticles(obj.position, 0x554433);
                     destructibles.splice(i, 1);
-                    GAME.souls += 5;
+                    GAME.souls += 8;
                     updateHUD();
                 }
             }
@@ -1107,7 +1198,7 @@
                 document.getElementById('lockon-reticle').style.display = 'none';
             } else {
                 let closest = null;
-                let minDist = 25;
+                let minDist = 28;
                 enemies.forEach(e => {
                     if (e.isDead) return;
                     const d = playerGroup.position.distanceTo(e.group.position);
@@ -1131,7 +1222,7 @@
             }
 
             const targetPos = GAME.lockTarget.group.position.clone();
-            targetPos.y += 1.6;
+            targetPos.y += 1.7;
 
             playerGroup.lookAt(targetPos.x, playerGroup.position.y, targetPos.z);
             yaw = playerGroup.rotation.y;
@@ -1157,7 +1248,7 @@
         document.getElementById('upgrade-hp').addEventListener('click', () => {
             if (GAME.souls >= 50) {
                 GAME.souls -= 50;
-                GAME.maxHp += 20;
+                GAME.maxHp += 50;
                 GAME.hp = GAME.maxHp;
                 updateHUD();
                 document.getElementById('shrine-souls').innerText = GAME.souls;
@@ -1167,7 +1258,7 @@
         document.getElementById('upgrade-stamina').addEventListener('click', () => {
             if (GAME.souls >= 40) {
                 GAME.souls -= 40;
-                GAME.maxStamina += 20;
+                GAME.maxStamina += 25;
                 GAME.stamina = GAME.maxStamina;
                 updateHUD();
                 document.getElementById('shrine-souls').innerText = GAME.souls;
@@ -1177,7 +1268,7 @@
         document.getElementById('upgrade-dmg').addEventListener('click', () => {
             if (GAME.souls >= 60) {
                 GAME.souls -= 60;
-                GAME.damage += 8;
+                GAME.damage += 25;
                 updateHUD();
                 document.getElementById('shrine-souls').innerText = GAME.souls;
             }
@@ -1190,7 +1281,11 @@
             deathModal.style.display = 'block';
         }
 
-        // --- ANIMATION ENGINE LOOP ---
+        /*
+         * ====================================================================
+         * 12. MAIN ANIMATION & GAME LOOP
+         * ====================================================================
+         */
         const clock = new THREE.Clock();
         let stepSoundTimer = 0;
 
@@ -1222,10 +1317,10 @@
                     }
                 }
 
-                playerGroup.position.x = Math.max(-66, Math.min(66, playerGroup.position.x));
-                playerGroup.position.z = Math.max(-66, Math.min(66, playerGroup.position.z));
+                playerGroup.position.x = Math.max(-76, Math.min(76, playerGroup.position.x));
+                playerGroup.position.z = Math.max(-76, Math.min(76, playerGroup.position.z));
 
-                // SPACEBAR Jump Controls
+                // Jump Physics
                 if (keys['Space'] && isGrounded) {
                     velocityY = CONFIG.jumpForce;
                     isGrounded = false;
@@ -1243,10 +1338,10 @@
                 // Dodge Roll Animation
                 if (GAME.isDodging) {
                     GAME.dodgeTimer += delta * 6.5;
-                    camera.rotation.z = Math.sin(GAME.dodgeTimer) * 0.25;
+                    cameraContainer.rotation.z = Math.sin(GAME.dodgeTimer) * 0.25;
                     if (GAME.dodgeTimer >= Math.PI) {
                         GAME.isDodging = false;
-                        camera.rotation.z = 0;
+                        cameraContainer.rotation.z = 0;
                     }
                 }
 
@@ -1256,9 +1351,9 @@
                 }
                 updateHUD();
 
-                // Bonfire Shrine Check
+                // Bonfire Shrine Range
                 const distToShrine = playerGroup.position.distanceTo(shrineGroup.position);
-                if (distToShrine < 4.5) {
+                if (distToShrine < 4.8) {
                     GAME.nearShrine = true;
                     document.getElementById('interaction-prompt').style.display = 'block';
                 } else {
@@ -1266,38 +1361,35 @@
                     document.getElementById('interaction-prompt').style.display = 'none';
                 }
 
-                // SWORD SWIPE ANIMATION ACROSS SCREEN
+                // SWORD SWIPE MOTION & TRAIL DISPERSION
                 if (GAME.isAttacking) {
-                    GAME.attackProgress += delta * 7.5;
+                    GAME.attackProgress += delta * 8.0;
 
                     if (slashTrailMat.opacity > 0) {
-                        slashTrailMat.opacity -= delta * 2.5;
+                        slashTrailMat.opacity -= delta * 2.8;
                     }
 
                     if (GAME.attackComboStep === 0) {
-                        // Wide Horizontal Slash (Right to Left)
-                        swordGroup.position.x = 0.5 - Math.sin(GAME.attackProgress) * 1.4;
-                        swordGroup.position.y = -0.4 + Math.sin(GAME.attackProgress) * 0.3;
-                        swordGroup.rotation.z = -Math.sin(GAME.attackProgress) * 2.8;
-                        swordGroup.rotation.y = -Math.sin(GAME.attackProgress) * 1.5;
+                        swordGroup.position.x = 0.5 - Math.sin(GAME.attackProgress) * 1.5;
+                        swordGroup.position.y = -0.4 + Math.sin(GAME.attackProgress) * 0.35;
+                        swordGroup.rotation.z = -Math.sin(GAME.attackProgress) * 2.9;
+                        swordGroup.rotation.y = -Math.sin(GAME.attackProgress) * 1.6;
                     } else if (GAME.attackComboStep === 1) {
-                        // Diagonal Cleave (Left to Right Downward)
-                        swordGroup.position.x = -0.6 + Math.sin(GAME.attackProgress) * 1.4;
-                        swordGroup.position.y = 0.2 - Math.sin(GAME.attackProgress) * 1.2;
-                        swordGroup.rotation.z = Math.sin(GAME.attackProgress) * 2.5;
-                        swordGroup.rotation.x = -Math.sin(GAME.attackProgress) * 1.8;
+                        swordGroup.position.x = -0.6 + Math.sin(GAME.attackProgress) * 1.5;
+                        swordGroup.position.y = 0.2 - Math.sin(GAME.attackProgress) * 1.3;
+                        swordGroup.rotation.z = Math.sin(GAME.attackProgress) * 2.6;
+                        swordGroup.rotation.x = -Math.sin(GAME.attackProgress) * 1.9;
                     } else {
-                        // Heavy Overhead Vertical Slam
                         swordGroup.position.x = 0.0;
-                        swordGroup.position.y = 0.4 - Math.sin(GAME.attackProgress) * 1.4;
-                        swordGroup.rotation.x = -1.8 + Math.sin(GAME.attackProgress) * 3.2;
+                        swordGroup.position.y = 0.4 - Math.sin(GAME.attackProgress) * 1.5;
+                        swordGroup.rotation.x = -1.8 + Math.sin(GAME.attackProgress) * 3.4;
                     }
 
                     if (GAME.attackProgress >= Math.PI) {
                         GAME.isAttacking = false;
                         slashTrailMat.opacity = 0;
                         swordGroup.rotation.set(0.2, -0.25, -0.15);
-                        swordGroup.position.set(0.45, -0.42, -0.65);
+                        swordGroup.position.set(0.48, -0.42, -0.68);
                     }
                 } else if (GAME.isBlocking) {
                     swordGroup.position.set(0.0, -0.25, -0.45);
@@ -1307,18 +1399,17 @@
                     swordGroup.position.y = -0.42 + Math.sin(time) * 0.015;
                     torchGroup.position.y = -0.4 + Math.cos(time) * 0.015;
 
-                    // Torch Flickering Light Dynamics
-                    playerTorchLight.intensity = 7.0 + (Math.random() - 0.5) * 1.2;
+                    playerTorchLight.intensity = 7.5 + (Math.random() - 0.5) * 1.3;
                     torchFlameMesh.rotation.y += delta * 4;
                 }
 
                 updateLockOnReticle();
 
-                // Update Enemies & Boss
+                // Update Entities
                 enemies.forEach(enemy => enemy.update(delta, playerGroup.position));
                 if (GAME.boss) GAME.boss.update(delta, playerGroup.position);
 
-                // Update Particles
+                // Update Particle Physics
                 for (let i = particles.length - 1; i >= 0; i--) {
                     const p = particles[i];
                     p.life -= delta;
