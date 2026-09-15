@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morgath: Path of Ashes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background-color: #050505;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        /* Retro CRT / PS1-PS2 Post-Processing Overlay */
+        .retro-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            text-shadow: 2px 2px 4px #000;
+        }
+        h1 {
+            font-size: 20px;
+            letter-spacing: 3px;
+            color: #8c1d1d;
+            text-transform: uppercase;
+        }
+        .stats {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #a3a3a3;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: rgba(212, 212, 212, 0.5);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 20;
+            pointer-events: none;
+        }
+        #instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(10, 10, 10, 0.85);
+            padding: 30px;
+            border: 1px solid #441111;
+            z-index: 30;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0,0,0,0.9);
+        }
+        #instructions h2 {
+            color: #b32424;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+        #instructions p {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #888;
+        }
+        .btn-start {
+            margin-top: 15px;
+            display: inline-block;
+            color: #d4d4d4;
+            border: 1px solid #666;
+            padding: 8px 16px;
+            background: #1a0505;
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="game-container">
+        <div class="retro-overlay"></div>
+        <div id="crosshair"></div>
+        
+        <div id="ui">
+            <h1>Morgath</h1>
+            <div class="stats">
+                <p>Souls Banished: <span id="score">0</span></p>
+                <p>HP: <span id="hp">100</span></p>
+            </div>
+        </div>
+
+        <div id="instructions">
+            <h2>CURSED COURTYARD</h2>
+            <p><strong>WASD</strong> - Move Knight</p>
+            <p><strong>MOUSE</strong> - Look Around</p>
+            <p><strong>LEFT CLICK</strong> - Slash Sword</p>
+            <div class="btn-start">CLICK TO ENTER THE DARKNESS</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. GAME SETUP & SCENE CREATION ---
+        const container = document.getElementById('game-container');
+        const scoreEl = document.getElementById('score');
+        const hpEl = document.getElementById('hp');
+        const instructions = document.getElementById('instructions');
+
+        let score = 0;
+        let health = 100;
+        let isGameActive = false;
+
+        // Scene, Camera, Low-Resolution Pixelated Renderer (PS2 Vibe)
+        const scene = new THREE.Scene();
+        // Dark crimson fog for grim atmosphere
+        scene.background = new THREE.Color(0x0a0508);
+        scene.fog = new THREE.FogExp2(0x0a0508, 0.045);
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        // Low resolution rendering to mimic PS1/PS2 style
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
+        const renderScale = 0.5; // Lower resolution scale for crunchiness
+        renderer.setSize(window.innerWidth * renderScale, window.innerHeight * renderScale);
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap; // Low poly hard shadows
+        container.appendChild(renderer.domElement);
+
+        // --- 2. LIGHTING (Dark Fantasy Gothic Ambient) ---
+        const ambientLight = new THREE.AmbientLight(0x221111, 0.8);
+        scene.add(ambientLight);
+
+        // Crimson moonlight
+        const moonLight = new THREE.DirectionalLight(0x883333, 1.2);
+        moonLight.position.set(20, 40, -20);
+        moonLight.castShadow = true;
+        scene.add(moonLight);
+
+        // Fire point lights in courtyard
+        function createTorch(x, z) {
+            const torchLight = new THREE.PointLight(0xff4400, 2, 15);
+            torchLight.position.set(x, 3, z);
+            scene.add(torchLight);
+
+            // Simple torch geometry
+            const geo = new THREE.BoxGeometry(0.2, 1.5, 0.2);
+            const mat = new THREE.MeshBasicMaterial({ color: 0x331100 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, 1.5, z);
+            scene.add(mesh);
+        }
+        createTorch(-10, -10);
+        createTorch(10, -10);
+        createTorch(-10, 10);
+        createTorch(10, 10);
+
+        // --- 3. ENVIRONMENT (Low-Poly Castle Courtyard) ---
+        // Stone Floor
+        const floorGeo = new THREE.PlaneGeometry(80, 80, 16, 16);
+        const floorMat = new THREE.MeshLambertMaterial({ 
+            color: 0x1c1a1a, 
+            wireframe: false,
+            flatShading: true 
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Castle Walls & Pillars
+        const wallMat = new THREE.MeshLambertMaterial({ color: 0x151316, flatShading: true });
+        
+        function createWall(x, z, w, h, d) {
+            const geo = new THREE.BoxGeometry(w, h, d);
+            const wall = new THREE.Mesh(geo, wallMat);
+            wall.position.set(x, h/2, z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            scene.add(wall);
+        }
+
+        // Outer Castle Keep Walls
+        createWall(0, -40, 80, 20, 2);  // Back wall
+        createWall(-40, 0, 2, 20, 80);  // Left wall
+        createWall(40, 0, 2, 20, 80);   // Right wall
+        
+        // Gothic Pillars
+        for (let i = -20; i <= 20; i += 20) {
+            for (let j = -20; j <= 20; j += 20) {
+                if (i === 0 && j === 0) continue;
+                createWall(i, j, 3, 12, 3);
+            }
+        }
+
+        // --- 4. PLAYER & SWORD CREATION ---
+        const playerGroup = new THREE.Group();
+        scene.add(playerGroup);
+        playerGroup.position.set(0, 1.6, 0); // Eye level height
+        playerGroup.add(camera);
+
+        // Low-Poly Greatsword (Attached to Camera view)
+        const swordGroup = new THREE.Group();
+        camera.add(swordGroup);
+
+        // Blade
+        const bladeGeo = new THREE.BoxGeometry(0.1, 1.4, 0.03);
+        const bladeMat = new THREE.MeshStandardMaterial({ color: 0x8899a6, roughness: 0.3, metalness: 0.8, flatShading: true });
+        const blade = new THREE.Mesh(bladeGeo, bladeMat);
+        blade.position.set(0, 0.7, 0);
+        swordGroup.add(blade);
+
+        // Guard
+        const guardGeo = new THREE.BoxGeometry(0.4, 0.05, 0.08);
+        const hiltMat = new THREE.MeshLambertMaterial({ color: 0x221100, flatShading: true });
+        const guard = new THREE.Mesh(guardGeo, hiltMat);
+        guard.position.set(0, 0.02, 0);
+        swordGroup.add(guard);
+
+        // Handle
+        const handleGeo = new THREE.BoxGeometry(0.06, 0.3, 0.06);
+        const handle = new THREE.Mesh(handleGeo, hiltMat);
+        handle.position.set(0, -0.15, 0);
+        swordGroup.add(handle);
+
+        // Position sword in front of player (First Person view)
+        swordGroup.position.set(0.35, -0.35, -0.6);
+        swordGroup.rotation.set(0.2, -0.2, -0.1);
+
+        // --- 5. ENEMIES (Wraiths / Dark Spirits) ---
+        const enemies = [];
+        const enemyMat = new THREE.MeshLambertMaterial({ color: 0x0a0a0d, flatShading: true });
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0022 });
+
+        function spawnEnemy() {
+            const enemyGroup = new THREE.Group();
+
+            // Low poly ghostly body
+            const bodyGeo = new THREE.ConeGeometry(0.8, 2.2, 5);
+            const body = new THREE.Mesh(bodyGeo, enemyMat);
+            body.rotation.x = Math.PI;
+            body.position.y = 1.1;
+            enemyGroup.add(body);
+
+            // Glowing Eyes
+            const eyeGeo = new THREE.BoxGeometry(0.1, 0.05, 0.1);
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.2, 1.4, 0.35);
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.2, 1.4, 0.35);
+            enemyGroup.add(leftEye);
+            enemyGroup.add(rightEye);
+
+            // Spawn at random location near courtyard perimeter
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 15 + Math.random() * 15;
+            enemyGroup.position.x = Math.cos(angle) * radius;
+            enemyGroup.position.z = Math.sin(angle) * radius;
+
+            scene.add(enemyGroup);
+            enemies.push({
+                mesh: enemyGroup,
+                speed: 0.03 + Math.random() * 0.02,
+                hp: 2
+            });
+        }
+
+        // Spawn initial wave
+        for(let i = 0; i < 5; i++) spawnEnemy();
+
+        // --- 6. CONTROLS & CONTROLLER LOGIC ---
+        const keys = {};
+        let yaw = 0;
+        let pitch = 0;
+        let isAttacking = false;
+        let attackProgress = 0;
+
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // Pointer Lock for FPS Controls
+        instructions.addEventListener('click', () => {
+            container.requestPointerLock();
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement === container) {
+                isGameActive = true;
+                instructions.style.display = 'none';
+            } else {
+                isGameActive = false;
+                instructions.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isGameActive) return;
+            const sensitivity = 0.0025;
+            yaw -= e.movementX * sensitivity;
+            pitch -= e.movementY * sensitivity;
+
+            // Clamp pitch to prevent flipping
+            pitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, pitch));
+
+            playerGroup.rotation.y = yaw;
+            camera.rotation.x = pitch;
+        });
+
+        // Left Click Attack
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && !isAttacking && isGameActive) {
+                isAttacking = true;
+                attackProgress = 0;
+                performAttackCheck();
+            }
+        });
+
+        function performAttackCheck() {
+            // Check for hit targets in front of player
+            const attackRange = 2.8;
+            const playerPos = playerGroup.position;
+            const playerDir = new THREE.Vector3();
+            camera.getWorldDirection(playerDir);
+
+            enemies.forEach((enemy, index) => {
+                const dist = playerPos.distanceTo(enemy.mesh.position);
+                if (dist < attackRange) {
+                    // Check angle relative to crosshair
+                    const toEnemy = enemy.mesh.position.clone().sub(playerPos).normalize();
+                    const angle = playerDir.angleTo(toEnemy);
+                    
+                    if (angle < 0.8) { // Hit angle threshold
+                        enemy.hp -= 1;
+                        // Flash red
+                        enemy.mesh.children[0].material = new THREE.MeshBasicMaterial({ color: 0xaa2222 });
+                        setTimeout(() => {
+                            if (enemy.mesh.children[0]) {
+                                enemy.mesh.children[0].material = enemyMat;
+                            }
+                        }, 100);
+
+                        if (enemy.hp <= 0) {
+                            scene.remove(enemy.mesh);
+                            enemies.splice(index, 1);
+                            score += 1;
+                            scoreEl.innerText = score;
+                            setTimeout(spawnEnemy, 2000); // Respawn new spirit
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 7. MAIN GAME LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            if (isGameActive) {
+                // Movement Handling
+                const moveSpeed = 6.0 * delta;
+                const moveVector = new THREE.Vector3();
+
+                if (keys['KeyW']) moveVector.z -= 1;
+                if (keys['KeyS']) moveVector.z += 1;
+                if (keys['KeyA']) moveVector.x -= 1;
+                if (keys['KeyD']) moveVector.x += 1;
+
+                moveVector.normalize();
+                moveVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                playerGroup.position.addScaledVector(moveVector, moveSpeed);
+
+                // Keep player within bounds
+                playerGroup.position.x = Math.max(-38, Math.min(38, playerGroup.position.x));
+                playerGroup.position.z = Math.max(-38, Math.min(38, playerGroup.position.z));
+
+                // Sword Attack Animation Logic
+                if (isAttacking) {
+                    attackProgress += delta * 8; // Attack speed multiplier
+                    if (attackProgress < Math.PI) {
+                        // Slash swing transform
+                        swordGroup.rotation.z = -Math.sin(attackProgress) * 1.5;
+                        swordGroup.rotation.x = 0.2 - Math.sin(attackProgress) * 0.8;
+                        swordGroup.position.x = 0.35 - Math.sin(attackProgress) * 0.5;
+                    } else {
+                        isAttacking = false;
+                        attackProgress = 0;
+                        // Reset sword relative pose
+                        swordGroup.rotation.set(0.2, -0.2, -0.1);
+                        swordGroup.position.set(0.35, -0.35, -0.6);
+                    }
+                } else {
+                    // Subtle weapon breathing/idle sway
+                    const time = clock.getElapsedTime();
+                    swordGroup.position.y = -0.35 + Math.sin(time * 2) * 0.015;
+                }
+
+                // Enemy AI: Move towards Knight
+                enemies.forEach((enemy) => {
+                    const dir = playerGroup.position.clone().sub(enemy.mesh.position);
+                    dir.y = 0; // Float horizontally
+                    const dist = dir.length();
+                    dir.normalize();
+
+                    // Float motion
+                    enemy.mesh.position.y = 1.0 + Math.sin(clock.getElapsedTime() * 3 + enemy.speed) * 0.2;
+
+                    if (dist > 1.2) {
+                        enemy.mesh.position.addScaledVector(dir, enemy.speed);
+                        enemy.mesh.lookAt(playerGroup.position.x, enemy.mesh.position.y, playerGroup.position.z);
+                    } else {
+                        // Hurt Player if too close
+                        health -= 15 * delta;
+                        hpEl.innerText = Math.max(0, Math.round(health));
+                        if (health <= 0) {
+                            alert('YOU HAVE SUCCUMBED TO THE DARKNESS. Banished: ' + score);
+                            location.reload();
+                        }
+                    }
+                });
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Window Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth * renderScale, window.innerHeight * renderScale);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
