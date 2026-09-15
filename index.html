@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MORGATH II: THE REDEMPTION OF THE CASTLE</title>
+    <title>MORGATH II: THE REDEMPTION OF THE CASTLE - EXTENDED EDITION</title>
     <style>
-        /*
-         * ====================================================================
-         * 1. CORE VISUAL ENGINE & OVERLAYS
-         * ====================================================================
-         */
+        /* ==========================================================================
+           1. CORE VISUAL ENGINE & CRT OVERLAYS
+           ========================================================================== */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,6 +15,7 @@
             user-select: none;
             -webkit-user-select: none;
         }
+
         body, html {
             width: 100%;
             height: 100%;
@@ -25,11 +24,13 @@
             font-family: 'Courier New', Courier, monospace;
             color: #f0f0f0;
         }
+
         #viewport-container {
             position: relative;
             width: 100vw;
             height: 100vh;
         }
+
         canvas {
             display: block;
             width: 100%;
@@ -38,27 +39,47 @@
 
         .crt-scanlines {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%;
             pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
             background-size: 100% 4px;
             box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.95);
             z-index: 10;
         }
 
+        .vignette-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 60%, rgba(2, 1, 4, 0.85) 100%);
+            z-index: 11;
+        }
+
         #damage-flash {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
             background: rgba(230, 0, 0, 0.45);
             pointer-events: none;
             z-index: 15;
             opacity: 0;
             transition: opacity 0.08s ease;
         }
+
         #parry-flash {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
             background: rgba(180, 230, 255, 0.6);
             pointer-events: none;
             z-index: 15;
@@ -66,15 +87,15 @@
             transition: opacity 0.08s ease;
         }
 
-        /*
-         * ====================================================================
-         * 2. HEADS-UP DISPLAY (HUD)
-         * ====================================================================
-         */
+        /* ==========================================================================
+           2. HEADS-UP DISPLAY (HUD)
+           ========================================================================== */
         #hud {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%;
             pointer-events: none;
             z-index: 20;
             display: flex;
@@ -96,6 +117,7 @@
             text-shadow: 0 0 16px rgba(217, 28, 28, 0.9), 2px 2px 0px #000;
             text-transform: uppercase;
         }
+
         .title-box p {
             font-size: 11px;
             color: #9999b3;
@@ -106,13 +128,16 @@
         .bars-container {
             width: 340px;
         }
+
         .bar-wrap {
             margin-bottom: 12px;
             background: rgba(6, 5, 8, 0.92);
             border: 1px solid #662222;
             padding: 5px;
             position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
+
         .bar-label {
             font-size: 11px;
             letter-spacing: 1px;
@@ -121,12 +146,21 @@
             display: flex;
             justify-content: space-between;
         }
+
         .bar-fill {
             height: 16px;
             transition: width 0.08s ease-out;
         }
-        #hp-fill { background: linear-gradient(90deg, #770000, #ff1a1a); width: 100%; }
-        #stamina-fill { background: linear-gradient(90deg, #0f5c22, #33d660); width: 100%; }
+
+        #hp-fill { 
+            background: linear-gradient(90deg, #770000, #ff1a1a); 
+            width: 100%; 
+        }
+
+        #stamina-fill { 
+            background: linear-gradient(90deg, #0f5c22, #33d660); 
+            width: 100%; 
+        }
 
         .souls-counter {
             font-size: 15px;
@@ -156,13 +190,14 @@
             letter-spacing: 2px;
             pointer-events: auto;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        .hud-btn:hover {
-            background: rgba(140, 38, 38, 0.6);
+            transition: background 0.2s, border-color 0.2s;
         }
 
-        /* Objective Banner */
+        .hud-btn:hover {
+            background: rgba(140, 38, 38, 0.6);
+            border-color: #ff5555;
+        }
+
         #objective-banner {
             position: absolute;
             top: 30px;
@@ -176,34 +211,42 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            text-align: center;
         }
 
-        /* Reticles & Interaction Prompts */
         #crosshair {
             position: absolute;
-            top: 50%; left: 50%;
-            width: 6px; height: 6px;
+            top: 50%; 
+            left: 50%;
+            width: 6px; 
+            height: 6px;
             background: rgba(255, 255, 255, 0.85);
             transform: translate(-50%, -50%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 20;
+            transition: all 0.1s ease;
         }
+
         #crosshair.blocking {
-            width: 30px; height: 30px;
+            width: 30px; 
+            height: 30px;
             border: 2px solid rgba(140, 200, 255, 0.95);
             background: transparent;
             border-radius: 4px;
         }
+
         #lockon-reticle {
             position: absolute;
-            width: 44px; height: 44px;
+            width: 44px; 
+            height: 44px;
             border: 2px dashed #ff3333;
             transform: translate(-50%, -50%) rotate(45deg);
             pointer-events: none;
             z-index: 20;
             display: none;
         }
+
         #interaction-prompt {
             position: absolute;
             bottom: 120px;
@@ -220,7 +263,6 @@
             box-shadow: 0 0 20px rgba(196, 51, 51, 0.5);
         }
 
-        /* Vehicle Speedometer Overlay */
         #car-hud {
             position: absolute;
             bottom: 30px;
@@ -231,17 +273,22 @@
             z-index: 20;
             display: none;
             text-align: right;
+            box-shadow: 0 0 15px rgba(0,0,0,0.9);
         }
+
         #speed-val {
             font-size: 28px;
             color: #ff4444;
             font-weight: bold;
         }
 
-        /* Modals & Menus */
+        /* ==========================================================================
+           3. MODAL WINDOWS & MENU OVERLAYS
+           ========================================================================== */
         .modal {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%; 
+            left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(8, 6, 12, 0.96);
             border: 2px solid #9e2424;
@@ -249,9 +296,10 @@
             text-align: center;
             z-index: 30;
             box-shadow: 0 0 100px rgba(0,0,0,0.98);
-            max-width: 650px;
+            max-width: 680px;
             width: 90%;
         }
+
         .modal h2 {
             color: #ea2a2a;
             font-size: 32px;
@@ -259,12 +307,14 @@
             margin-bottom: 16px;
             text-transform: uppercase;
         }
+
         .modal p {
             font-size: 13px;
             line-height: 1.6;
             color: #aeb0cc;
             margin-bottom: 22px;
         }
+
         .controls-grid {
             text-align: left;
             background: rgba(0,0,0,0.75);
@@ -277,6 +327,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 10px 20px;
         }
+
         .btn {
             background: #4a0d0d;
             border: 1px solid #b32d2d;
@@ -289,21 +340,11 @@
             transition: all 0.2s;
             margin: 5px;
         }
+
         .btn:hover {
             background: #8c1c1c;
             border-color: #ff4444;
             color: #fff;
-        }
-
-        .damage-text {
-            position: absolute;
-            color: #ff3333;
-            font-weight: bold;
-            font-size: 28px;
-            pointer-events: none;
-            z-index: 25;
-            text-shadow: 2px 2px 6px #000;
-            transition: transform 0.6s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.6s ease;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -312,11 +353,12 @@
 
     <div id="viewport-container">
         <div class="crt-scanlines"></div>
+        <div class="vignette-layer"></div>
         <div id="damage-flash"></div>
         <div id="parry-flash"></div>
         <div id="crosshair"></div>
         <div id="lockon-reticle"></div>
-        <div id="interaction-prompt">PRESS [E] TO INTERACT</div>
+        <div id="interaction-prompt">PRESS [CTRL] OR [E] TO INTERACT</div>
         <div id="objective-banner">OBJECTIVE: ELIMINATE ENEMIES TO UNLOCK EXIT</div>
 
         <div id="hud">
@@ -356,11 +398,11 @@
             <div class="controls-grid">
                 <div><span>W A S D</span> : Move / Drive</div>
                 <div><span>C</span> : Toggle Camera (1st/3rd)</div>
-                <div><span>LEFT CLICK</span> : 3x Power Sword Swing</div>
+                <div><span>LEFT CLICK</span> : Sword Attack</div>
                 <div><span>RIGHT CLICK</span> : Guard / Parry</div>
                 <div><span>SPACEBAR</span> : Jump / Handbrake</div>
-                <div><span>ALT / N</span> : Dodge Roll</div>
-                <div><span>E</span> : Enter Car / Open Door</div>
+                <div><span>SHIFT</span> : Sprint / Nitro (80 MPH)</div>
+                <div><span>CTRL / E</span> : Enter / Exit Car</div>
                 <div><span>TAB</span> : Lock-on Target</div>
             </div>
             <button class="btn" id="start-btn">BEGIN QUEST</button>
@@ -369,7 +411,7 @@
         <!-- Victory Modal -->
         <div id="victory-modal" class="modal" style="display: none;">
             <h2 style="color: #44ff66;">PRINCESS RESCUED</h2>
-            <p>You stormed the castle, vanquished the guards, and freed the princess from dark imprisonment!</p>
+            <p>You stormed the castle, vanquished the dark guards, and freed the princess from her imprisonment!</p>
             <p>Total Souls Collected: <span id="victory-souls">0</span></p>
             <button class="btn" id="victory-restart-btn">PLAY AGAIN</button>
         </div>
@@ -383,135 +425,97 @@
     </div>
 
     <script>
-        /*
-         * ====================================================================
-         * 3. ENGINE CONFIGURATION & DATA STRUCTURES
-         * ====================================================================
-         */
-
+        /* ==========================================================================
+           4. CONFIGURATION & GLOBAL GAME STATE
+           ========================================================================== */
         const CONFIG = {
             fov: 75,
             playerHeight: 1.8,
             playerSpeed: 8.5,
-            sprintMultiplier: 1.4,
+            sprintMultiplier: 1.5,
             gravity: 24.0,
             jumpForce: 9.0,
             maxHp: 400,
             maxStamina: 100,
             staminaRegen: 35,
-            staminaAttackCost: 18,
-            staminaRollCost: 25,
             baseDamage: 90
         };
 
         const GAME = {
             active: false,
-            phase: 'COURTYARD', // 'COURTYARD', 'FOREST', 'CASTLE', 'VICTORY'
+            phase: 'COURTYARD', // COURTYARD, FOREST, CASTLE
             hp: CONFIG.maxHp,
             maxHp: CONFIG.maxHp,
             stamina: CONFIG.maxStamina,
             maxStamina: CONFIG.maxStamina,
-            damage: CONFIG.baseDamage,
             souls: 0,
             isBlocking: false,
-            isParrying: false,
-            isAttacking: false,
-            attackComboStep: 0,
-            attackProgress: 0,
-            isDodging: false,
-            dodgeTimer: 0,
-            lockTarget: null,
             isThirdPerson: false,
             courtyardCleared: false,
             inCar: false,
             carSpeed: 0,
-            steeringAngle: 0
+            targetEnemy: null
         };
 
-        /*
-         * ====================================================================
-         * 4. PROCEDURAL AUDIO SYNTHESIZER ENGINE
-         * ====================================================================
-         */
+        /* ==========================================================================
+           5. PROCEDURAL AUDIO SYNTHESIZER ENGINE
+           ========================================================================== */
         class AudioEngine {
-            constructor() { this.ctx = null; }
-            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-
-            playFootstep() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(60, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(18, this.ctx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.08);
+            constructor() { 
+                this.ctx = null; 
+                this.engineOsc = null;
+                this.engineGain = null;
             }
 
-            playSwordSwing() {
+            init() { 
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+                }
+            }
+
+            playSwing() {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                const filter = this.ctx.createBiquadFilter();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(420, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain); 
+                gain.connect(this.ctx.destination);
+                osc.start(); 
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
 
+            playHit() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(340, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.24);
-
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(1800, this.ctx.currentTime);
-                filter.frequency.linearRampToValueAtTime(250, this.ctx.currentTime + 0.24);
-
-                gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.24);
-
-                osc.connect(filter);
-                filter.connect(gain);
+                osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                osc.connect(gain); 
                 gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.24);
-            }
-
-            playHitSound() {
-                if (!this.ctx) return;
-                const bufferSize = this.ctx.sampleRate * 0.12;
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = buffer;
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.value = 800;
-
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                noise.start();
+                osc.start(); 
+                osc.stop(this.ctx.currentTime + 0.22);
             }
 
             playParrySound() {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.85, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.3);
+                osc.stop(this.ctx.currentTime + 0.1);
             }
 
             playEngineSound(pitch) {
@@ -520,13 +524,13 @@
                     this.engineOsc = this.ctx.createOscillator();
                     this.engineGain = this.ctx.createGain();
                     this.engineOsc.type = 'sawtooth';
-                    this.engineOsc.frequency.setValueAtTime(60, this.ctx.currentTime);
+                    this.engineOsc.frequency.setValueAtTime(50, this.ctx.currentTime);
                     this.engineGain.gain.setValueAtTime(0.05, this.ctx.currentTime);
                     this.engineOsc.connect(this.engineGain);
                     this.engineGain.connect(this.ctx.destination);
                     this.engineOsc.start();
                 }
-                this.engineOsc.frequency.setValueAtTime(50 + pitch * 120, this.ctx.currentTime);
+                this.engineOsc.frequency.setValueAtTime(40 + pitch * 160, this.ctx.currentTime);
             }
 
             stopEngineSound() {
@@ -535,72 +539,37 @@
                     this.engineOsc = null;
                 }
             }
-
-            playAmbientDrone() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(40, this.ctx.currentTime);
-
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(120, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
-
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-            }
         }
-
         const audio = new AudioEngine();
 
-        /*
-         * ====================================================================
-         * 5. THREE.JS SCENE SETUP & LIGHTING
-         * ====================================================================
-         */
+        /* ==========================================================================
+           6. THREE.JS SCENE, CAMERA, & LIGHTING SETUP
+           ========================================================================== */
         const container = document.getElementById('viewport-container');
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x040307);
+        scene.fog = new THREE.FogExp2(0x040307, 0.012);
 
-        scene.background = new THREE.Color(0x06040a);
-        scene.fog = new THREE.FogExp2(0x06040a, 0.015);
-
-        const camera = new THREE.PerspectiveCamera(CONFIG.fov, window.innerWidth / window.innerHeight, 0.1, 1200);
-
+        const camera = new THREE.PerspectiveCamera(CONFIG.fov, window.innerWidth / window.innerHeight, 0.1, 1400);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0x2d2438, 1.2);
+        const ambientLight = new THREE.AmbientLight(0x2a2436, 1.3);
         scene.add(ambientLight);
 
-        const moonLight = new THREE.DirectionalLight(0x6677aa, 1.4);
-        moonLight.position.set(60, 100, 40);
+        const moonLight = new THREE.DirectionalLight(0x5577aa, 1.6);
+        moonLight.position.set(80, 120, 50);
         moonLight.castShadow = true;
+        moonLight.shadow.mapSize.width = 2048;
+        moonLight.shadow.mapSize.height = 2048;
         scene.add(moonLight);
 
-        /*
-         * ====================================================================
-         * 6. MATERIALS & SHARED GEOMETRY
-         * ====================================================================
-         */
-        const stoneMat = new THREE.MeshStandardMaterial({ color: 0x222028, roughness: 0.85, flatShading: true });
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x16141c, roughness: 0.9, flatShading: true });
-        const ironMat = new THREE.MeshStandardMaterial({ color: 0x242430, roughness: 0.5, metalness: 0.8 });
-        const armorMat = new THREE.MeshStandardMaterial({ color: 0x505260, roughness: 0.25, metalness: 0.9 });
-        const goldMat = new THREE.MeshStandardMaterial({ color: 0xddaa22, roughness: 0.3, metalness: 0.8 });
-        const clothMat = new THREE.MeshStandardMaterial({ color: 0x881111, roughness: 0.9, side: THREE.DoubleSide });
-
-        /*
-         * ====================================================================
-         * 7. DETAILED KNIGHT MODEL (REPLACES BLOCKY CHARACTER)
-         * ====================================================================
-         */
+        /* ==========================================================================
+           7. PLAYER CHARACTER & WEAPON CONTROLLER
+           ========================================================================== */
         const playerGroup = new THREE.Group();
         playerGroup.position.set(0, CONFIG.playerHeight, 30);
         scene.add(playerGroup);
@@ -609,105 +578,49 @@
         playerGroup.add(cameraContainer);
         cameraContainer.add(camera);
 
+        // Player Model
         const knightModel = new THREE.Group();
+        const armorMat = new THREE.MeshStandardMaterial({ color: 0x404250, roughness: 0.3, metalness: 0.85 });
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.28, 0.95, 8), armorMat);
+        torso.position.y = -0.55;
+        torso.castShadow = true;
+        knightModel.add(torso);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), armorMat);
+        head.position.y = 0.08;
+        head.castShadow = true;
+        knightModel.add(head);
+
+        const shoulderL = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), armorMat);
+        shoulderL.position.set(-0.42, -0.2, 0);
+        knightModel.add(shoulderL);
+
+        const shoulderR = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), armorMat);
+        shoulderR.position.set(0.42, -0.2, 0);
+        knightModel.add(shoulderR);
+
         playerGroup.add(knightModel);
 
-        function buildKnightModel() {
-            // Torso / Breastplate
-            const torsoGeo = new THREE.CylinderGeometry(0.38, 0.28, 0.95, 8);
-            const torso = new THREE.Mesh(torsoGeo, armorMat);
-            torso.position.y = -0.55;
-            torso.castShadow = true;
-            knightModel.add(torso);
-
-            // Helmet with Visor
-            const helmGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.42, 8);
-            const helm = new THREE.Mesh(helmGeo, armorMat);
-            helm.position.y = 0.15;
-            helm.castShadow = true;
-            knightModel.add(helm);
-
-            const visorGeo = new THREE.BoxGeometry(0.26, 0.08, 0.22);
-            const visor = new THREE.Mesh(visorGeo, ironMat);
-            visor.position.set(0, 0.18, 0.1);
-            knightModel.add(visor);
-
-            // Shoulder Pauldrons
-            const pauldronGeo = new THREE.SphereGeometry(0.22, 6, 6);
-            const pLeft = new THREE.Mesh(pauldronGeo, armorMat);
-            pLeft.position.set(-0.45, -0.22, 0);
-            knightModel.add(pLeft);
-
-            const pRight = new THREE.Mesh(pauldronGeo, armorMat);
-            pRight.position.set(0.45, -0.22, 0);
-            knightModel.add(pRight);
-
-            // Arms & Gauntlets
-            const armGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.6, 6);
-            const armL = new THREE.Mesh(armGeo, armorMat);
-            armL.position.set(-0.42, -0.6, 0);
-            knightModel.add(armL);
-
-            const armR = new THREE.Mesh(armGeo, armorMat);
-            armR.position.set(0.42, -0.6, 0);
-            knightModel.add(armR);
-
-            // Legs & Greaves
-            const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.75, 6);
-            const legL = new THREE.Mesh(legGeo, armorMat);
-            legL.position.set(-0.2, -1.3, 0);
-            knightModel.add(legL);
-
-            const legR = new THREE.Mesh(legGeo, armorMat);
-            legR.position.set(0.2, -1.3, 0);
-            knightModel.add(legR);
-
-            // Red Knight Cape
-            const capeGeo = new THREE.PlaneGeometry(0.7, 1.2, 4, 4);
-            const cape = new THREE.Mesh(capeGeo, clothMat);
-            cape.position.set(0, -0.7, -0.22);
-            cape.rotation.x = 0.15;
-            knightModel.add(cape);
-        }
-        buildKnightModel();
-
-        // Player Greatsword & Trail Rig
+        // Weapon (Sword)
         const swordGroup = new THREE.Group();
+        const bladeMat = new THREE.MeshStandardMaterial({ color: 0xe0e0ff, metalness: 0.95, roughness: 0.1 });
+        const hiltMat = new THREE.MeshStandardMaterial({ color: 0x3a2211, roughness: 0.8 });
+        
+        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.95, 0.02), bladeMat);
+        blade.position.y = 0.48;
+        blade.castShadow = true;
+        swordGroup.add(blade);
+
+        const crossguard = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.04, 0.05), armorMat);
+        crossguard.position.y = 0.02;
+        swordGroup.add(crossguard);
+
+        const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.2, 6), hiltMat);
+        hilt.position.y = -0.1;
+        swordGroup.add(hilt);
+
+        swordGroup.position.set(0.4, -0.3, -0.55);
         cameraContainer.add(swordGroup);
-
-        const slashTrailGeo = new THREE.RingGeometry(0.9, 2.2, 18, 1, 0, Math.PI * 0.85);
-        const slashTrailMat = new THREE.MeshBasicMaterial({
-            color: 0x66d9ff,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.0
-        });
-        const slashTrailMesh = new THREE.Mesh(slashTrailGeo, slashTrailMat);
-        slashTrailMesh.position.set(0, 0, -1.3);
-        slashTrailMesh.rotation.x = Math.PI / 2;
-        cameraContainer.add(slashTrailMesh);
-
-        function buildGreatsword() {
-            const blade = new THREE.Mesh(
-                new THREE.BoxGeometry(0.13, 2.2, 0.035),
-                new THREE.MeshStandardMaterial({ color: 0xd8e6f5, roughness: 0.15, metalness: 0.95, flatShading: true })
-            );
-            blade.position.y = 1.1;
-            blade.castShadow = true;
-            swordGroup.add(blade);
-
-            const guard = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.08, 0.1), ironMat);
-            guard.position.y = 0.03;
-            swordGroup.add(guard);
-
-            const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 6), ironMat);
-            handle.position.y = -0.24;
-            swordGroup.add(handle);
-
-            swordGroup.position.set(0.48, -0.42, -0.68);
-            swordGroup.rotation.set(0.2, -0.25, -0.15);
-        }
-        buildGreatsword();
 
         function updateCameraPerspective() {
             if (GAME.isThirdPerson) {
@@ -722,855 +635,526 @@
         }
         updateCameraPerspective();
 
-        /*
-         * ====================================================================
-         * 8. WORLD ENVIRONMENT: COURTYARD & HIGHLIGHTED DOORWAY
-         * ====================================================================
-         */
+        /* ==========================================================================
+           8. WORLD GENERATION & PROCEDURAL ENVIRONMENTS
+           ========================================================================== */
+        // Environment: Phase 1 Courtyard
         const courtyardGroup = new THREE.Group();
         scene.add(courtyardGroup);
 
-        const courtyardFloor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160, 24, 24), stoneMat);
+        const stoneMat = new THREE.MeshStandardMaterial({ color: 0x201e26, roughness: 0.85 });
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x16141c, roughness: 0.9 });
+
+        const courtyardFloor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), stoneMat);
         courtyardFloor.rotation.x = -Math.PI / 2;
         courtyardFloor.receiveShadow = true;
         courtyardGroup.add(courtyardFloor);
 
-        // Surrounding Keep Walls
-        function createWall(x, z, w, h, d) {
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
-            mesh.position.set(x, h / 2, z);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            courtyardGroup.add(mesh);
-        }
-        createWall(0, -80, 160, 28, 4);
-        createWall(-80, 0, 4, 28, 160);
-        createWall(80, 0, 4, 28, 160);
-        createWall(0, 80, 160, 28, 4);
+        // Surrounding Castle Walls
+        const wallN = new THREE.Mesh(new THREE.BoxGeometry(160, 16, 4), wallMat);
+        wallN.position.set(0, 8, -80);
+        courtyardGroup.add(wallN);
 
-        // Highlighted Transition Doorway
-        const doorwayGroup = new THREE.Group();
-        const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(7, 12, 2.5), stoneMat);
-        doorFrame.position.set(0, 6, -78);
-        doorwayGroup.add(doorFrame);
+        const wallS = new THREE.Mesh(new THREE.BoxGeometry(160, 16, 4), wallMat);
+        wallS.position.set(0, 8, 80);
+        courtyardGroup.add(wallS);
 
-        const doorPortalMat = new THREE.MeshBasicMaterial({ color: 0xff1122, wireframe: true });
-        const doorPortal = new THREE.Mesh(new THREE.PlaneGeometry(5, 10), doorPortalMat);
-        doorPortal.position.set(0, 5, -76.5);
-        doorwayGroup.add(doorPortal);
+        const wallE = new THREE.Mesh(new THREE.BoxGeometry(4, 16, 160), wallMat);
+        wallE.position.set(80, 8, 0);
+        courtyardGroup.add(wallE);
 
-        const doorLight = new THREE.PointLight(0xff2233, 0, 25);
-        doorLight.position.set(0, 6, -74);
-        doorwayGroup.add(doorLight);
+        const wallW = new THREE.Mesh(new THREE.BoxGeometry(4, 16, 160), wallMat);
+        wallW.position.set(-80, 8, 0);
+        courtyardGroup.add(wallW);
 
-        courtyardGroup.add(doorwayGroup);
+        // Decorative Courtyard Pillars
+        for (let i = -60; i <= 60; i += 30) {
+            if (i === 0) continue;
+            const pillarL = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 12, 8), wallMat);
+            pillarL.position.set(-25, 6, i);
+            pillarL.castShadow = true;
+            pillarL.receiveShadow = true;
+            courtyardGroup.add(pillarL);
 
-        function highlightDoorway() {
-            GAME.courtyardCleared = true;
-            doorLight.intensity = 12.0;
-            doorPortalMat.color.setHex(0xff3344);
-            document.getElementById('objective-banner').innerText = "OBJECTIVE: EXIT THROUGH THE GLOWING DOORWAY";
+            const pillarR = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 12, 8), wallMat);
+            pillarR.position.set(25, 6, i);
+            pillarR.castShadow = true;
+            pillarR.receiveShadow = true;
+            courtyardGroup.add(pillarR);
         }
 
-        /*
-         * ====================================================================
-         * 9. DARK FANTASY FOREST & CAR SYSTEM
-         * ====================================================================
-         */
+        // Exit Gate
+        const exitGate = new THREE.Mesh(new THREE.BoxGeometry(12, 10, 2), new THREE.MeshStandardMaterial({ color: 0x4a1818, roughness: 0.5 }));
+        exitGate.position.set(0, 5, -79);
+        courtyardGroup.add(exitGate);
+
+        // Environment: Phase 2 Forest & Highway
         const forestGroup = new THREE.Group();
         forestGroup.position.set(0, 0, -500);
-        scene.add(forestGroup);
         forestGroup.visible = false;
+        scene.add(forestGroup);
 
-        // Forest Terrain & Road
-        const forestFloor = new THREE.Mesh(new THREE.PlaneGeometry(300, 800, 32, 32), new THREE.MeshStandardMaterial({ color: 0x0a140d, roughness: 0.95 }));
+        const forestFloor = new THREE.Mesh(new THREE.PlaneGeometry(320, 800), new THREE.MeshStandardMaterial({ color: 0x09120b, roughness: 0.95 }));
         forestFloor.rotation.x = -Math.PI / 2;
         forestFloor.receiveShadow = true;
         forestGroup.add(forestFloor);
 
-        const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(18, 800), new THREE.MeshStandardMaterial({ color: 0x1a1818, roughness: 0.9 }));
-        roadMesh.rotation.x = -Math.PI / 2;
-        roadMesh.position.y = 0.05;
-        forestGroup.add(roadMesh);
+        // Road Track
+        const roadTrack = new THREE.Mesh(new THREE.PlaneGeometry(16, 800), new THREE.MeshStandardMaterial({ color: 0x111116, roughness: 0.8 }));
+        roadTrack.rotation.x = -Math.PI / 2;
+        roadTrack.position.y = 0.02;
+        forestGroup.add(roadTrack);
 
-        // Dark Fantasy Pines & Trees
-        function buildDarkForest() {
-            const treeMat = new THREE.MeshStandardMaterial({ color: 0x0d1a12, roughness: 0.9, flatShading: true });
-            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x1c120c, roughness: 0.9 });
+        // Procedural Forest Trees
+        const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x1f140e, roughness: 0.9 });
+        const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x0a2212, roughness: 0.8 });
 
-            for (let i = 0; i < 180; i++) {
-                const side = Math.random() > 0.5 ? 1 : -1;
-                const x = side * (18 + Math.random() * 110);
-                const z = (Math.random() - 0.5) * 750;
+        for (let i = 0; i < 180; i++) {
+            const tree = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 6, 6), treeTrunkMat);
+            trunk.position.y = 3;
+            tree.add(trunk);
 
-                const tree = new THREE.Group();
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 6, 6), trunkMat);
-                trunk.position.y = 3;
-                tree.add(trunk);
+            const leaves = new THREE.Mesh(new THREE.ConeGeometry(2.5, 8, 6), treeLeavesMat);
+            leaves.position.y = 8;
+            tree.add(leaves);
 
-                const foliage = new THREE.Mesh(new THREE.ConeGeometry(3.5, 12, 6), treeMat);
-                foliage.position.y = 10;
-                tree.add(foliage);
-
-                tree.position.set(x, 0, z);
-                forestGroup.add(tree);
-            }
+            let sideX = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 120);
+            let posZ = -380 + Math.random() * 760;
+            tree.position.set(sideX, 0, posZ);
+            forestGroup.add(tree);
         }
-        buildDarkForest();
 
-        // Dark Fantasy Gothic Car Rig
+        /* ==========================================================================
+           9. VEHICLE (CAR) SETUP & PHYSICS ENGINE
+           ========================================================================== */
         const carGroup = new THREE.Group();
-        carGroup.position.set(0, 1.0, 320);
+        carGroup.position.set(0, 1.0, 330);
         forestGroup.add(carGroup);
 
-        function buildDarkFantasyCar() {
-            const carBodyMat = new THREE.MeshStandardMaterial({ color: 0x18151c, roughness: 0.3, metalness: 0.8 });
-            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.1, metalness: 0.9 });
+        const carBodyMat = new THREE.MeshStandardMaterial({ color: 0x1c1824, metalness: 0.85, roughness: 0.2 });
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
 
-            // Main Body Frame
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 5.2), carBodyMat);
-            body.position.y = 0.6;
-            body.castShadow = true;
-            carGroup.add(body);
+        const carBody = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.1, 5.2), carBodyMat);
+        carBody.position.y = 0.6;
+        carBody.castShadow = true;
+        carGroup.add(carBody);
 
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.0, 2.4), carBodyMat);
-            cabin.position.set(0, 1.6, -0.4);
-            carGroup.add(cabin);
+        const carCabin = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.8, 2.6), carBodyMat);
+        carCabin.position.set(0, 1.45, -0.2);
+        carGroup.add(carCabin);
 
-            // Glowing Red Headlights
-            const headL = new THREE.PointLight(0xff2200, 10.0, 60);
-            headL.position.set(-0.9, 0.8, -2.7);
-            carGroup.add(headL);
+        // Car Wheels
+        const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.35, 12);
+        wheelGeo.rotateZ(Math.PI / 2);
 
-            const headR = new THREE.PointLight(0xff2200, 10.0, 60);
-            headR.position.set(0.9, 0.8, -2.7);
-            carGroup.add(headR);
+        const wheelFL = new THREE.Mesh(wheelGeo, wheelMat); wheelFL.position.set(-1.25, 0.45, -1.6); carGroup.add(wheelFL);
+        const wheelFR = new THREE.Mesh(wheelGeo, wheelMat); wheelFR.position.set(1.25, 0.45, -1.6); carGroup.add(wheelFR);
+        const wheelRL = new THREE.Mesh(wheelGeo, wheelMat); wheelRL.position.set(-1.25, 0.45, 1.6); carGroup.add(wheelRL);
+        const wheelRR = new THREE.Mesh(wheelGeo, wheelMat); wheelRR.position.set(1.25, 0.45, 1.6); carGroup.add(wheelRR);
 
-            const lampMeshGeo = new THREE.DodecahedronGeometry(0.25);
-            const lampMat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
+        // Headlights
+        const headL = new THREE.PointLight(0xff3311, 12.0, 70);
+        headL.position.set(-0.9, 0.8, -2.7);
+        carGroup.add(headL);
 
-            const lampL = new THREE.Mesh(lampMeshGeo, lampMat);
-            lampL.position.set(-0.9, 0.8, -2.65);
-            carGroup.add(lampL);
+        const headR = new THREE.PointLight(0xff3311, 12.0, 70);
+        headR.position.set(0.9, 0.8, -2.7);
+        carGroup.add(headR);
 
-            const lampR = new THREE.Mesh(lampMeshGeo, lampMat);
-            lampR.position.set(0.9, 0.8, -2.65);
-            carGroup.add(lampR);
-
-            // Wheels
-            const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.4, 12);
-            wheelGeo.rotateZ(Math.PI / 2);
-
-            const wPositions = [
-                [-1.3, 0.2, 1.8], [1.3, 0.2, 1.8],
-                [-1.3, 0.2, -1.8], [1.3, 0.2, -1.8]
-            ];
-
-            wPositions.forEach(([wx, wy, wz]) => {
-                const wheel = new THREE.Mesh(wheelGeo, chromeMat);
-                wheel.position.set(wx, wy, wz);
-                carGroup.add(wheel);
-            });
-        }
-        buildDarkFantasyCar();
-
-        /*
-         * ====================================================================
-         * 10. IMPERIAL CASTLE & PRINCESS ROOM
-         * ====================================================================
-         */
+        /* ==========================================================================
+           10. ENVIRONMENT: PHASE 3 ROYAL CASTLE & PRINCESS
+           ========================================================================== */
         const castleGroup = new THREE.Group();
-        castleGroup.position.set(0, 0, -850);
-        scene.add(castleGroup);
+        castleGroup.position.set(0, 0, -920);
         castleGroup.visible = false;
+        scene.add(castleGroup);
 
-        const princessGroup = new THREE.Group();
+        const castleFloor = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), stoneMat);
+        castleFloor.rotation.x = -Math.PI / 2;
+        castleFloor.receiveShadow = true;
+        castleGroup.add(castleFloor);
 
-        function buildImperialCastle() {
-            // Main Keep Spire
-            const mainKeep = new THREE.Mesh(new THREE.BoxGeometry(40, 50, 40), stoneMat);
-            mainKeep.position.y = 25;
-            castleGroup.add(mainKeep);
-
-            // Side Towers
-            const towerGeo = new THREE.CylinderGeometry(6, 7, 65, 10);
-            const towerLeft = new THREE.Mesh(towerGeo, stoneMat);
-            towerLeft.position.set(-25, 32.5, -20);
-            castleGroup.add(towerLeft);
-
-            const towerRight = new THREE.Mesh(towerGeo, stoneMat);
-            towerRight.position.set(25, 32.5, -20);
-            castleGroup.add(towerRight);
-
-            // Throne Room Platform
-            const throneRoom = new THREE.Mesh(new THREE.BoxGeometry(30, 12, 30), wallMat);
-            throneRoom.position.set(0, 6, 20);
-            castleGroup.add(throneRoom);
-
-            // Imprisoned Princess Rig
-            const princessDress = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.6, 8), new THREE.MeshStandardMaterial({ color: 0xff88bb, roughness: 0.4 }));
-            princessDress.position.y = 0.8;
-            princessGroup.add(princessDress);
-
-            const princessHead = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffddcc }));
-            princessHead.position.y = 1.7;
-            princessGroup.add(princessHead);
-
-            const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.2, 6), goldMat);
-            crown.position.y = 2.0;
-            princessGroup.add(crown);
-
-            const aura = new THREE.PointLight(0xffaae4, 6.0, 20);
-            aura.position.y = 2.0;
-            princessGroup.add(aura);
-
-            princessGroup.position.set(0, 12, 25);
-            castleGroup.add(princessGroup);
+        // Royal Castle Pillars & Throne Room Setup
+        for (let x = -30; x <= 30; x += 20) {
+            for (let z = -40; z <= 20; z += 20) {
+                if (Math.abs(x) < 10 && z < -20) continue;
+                const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.8, 16, 10), wallMat);
+                pillar.position.set(x, 8, z);
+                pillar.castShadow = true;
+                castleGroup.add(pillar);
+            }
         }
-        buildImperialCastle();
 
-        /*
-         * ====================================================================
-         * 11. ABSTRACT ENEMIES SYSTEM
-         * ====================================================================
-         */
+        // Princess Character Model
+        const princessGroup = new THREE.Group();
+        princessGroup.position.set(0, 1.0, -38);
+        castleGroup.add(princessGroup);
+
+        const dressMat = new THREE.MeshStandardMaterial({ color: 0xff77bb, roughness: 0.4 });
+        const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
+
+        const dress = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.75, 1.4, 12), dressMat);
+        dress.position.y = 0.7;
+        dress.castShadow = true;
+        princessGroup.add(dress);
+
+        const princessHead = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+        princessHead.position.y = 1.55;
+        princessGroup.add(princessHead);
+
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.25, 5), crownMat);
+        crown.position.y = 1.8;
+        princessGroup.add(crown);
+
+        // Princess Aura Light
+        const princessLight = new THREE.PointLight(0xffaae1, 4.0, 15);
+        princessLight.position.set(0, 2, -38);
+        castleGroup.add(princessLight);
+
+        /* ==========================================================================
+           11. ENEMY AI & COMBAT SYSTEM ENGINE
+           ========================================================================== */
         const enemies = [];
-        const enemyMat = new THREE.MeshStandardMaterial({ color: 0x16131d, roughness: 0.5, metalness: 0.3, flatShading: true });
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+        class Enemy {
+            constructor(group, x, z) {
+                this.mesh = new THREE.Group();
+                this.mesh.position.set(x, 1.2, z);
+                
+                const enemyMat = new THREE.MeshStandardMaterial({ color: 0x771111, roughness: 0.5 });
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.8, 8), enemyMat);
+                body.castShadow = true;
+                this.mesh.add(body);
 
-        class AbstractEnemy {
-            constructor(type, x, y, z) {
-                this.type = type;
-                this.group = new THREE.Group();
-                this.hp = type === 2 ? 180 : 90;
-                this.maxHp = this.hp;
-                this.speed = type === 1 ? 5.0 : 3.2;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), enemyMat);
+                head.position.y = 1.0;
+                this.mesh.add(head);
+
+                const eyesMat = new THREE.MeshBasicMaterial({ color: 0xff1100 });
+                const eyes = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.1), eyesMat);
+                eyes.position.set(0, 1.05, -0.2);
+                this.mesh.add(eyes);
+
+                group.add(this.mesh);
+                this.hp = 180;
+                this.alive = true;
                 this.attackCooldown = 0;
-                this.isStaggered = false;
-                this.staggerTimer = 0;
-                this.isDead = false;
-
-                this.buildMesh();
-                this.group.position.set(x, y, z);
-                scene.add(this.group);
             }
 
-            buildMesh() {
-                if (this.type === 0) {
-                    const geo = new THREE.CylinderGeometry(0.75, 1.35, 3.6, 6);
-                    const mesh = new THREE.Mesh(geo, enemyMat);
-                    mesh.position.y = 1.8;
-                    mesh.castShadow = true;
-                    this.group.add(mesh);
+            update(delta, targetPos) {
+                if (!this.alive) return;
 
-                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), eyeMat);
-                    eye.position.set(0, 2.5, 0.65);
-                    this.group.add(eye);
-                } else if (this.type === 1) {
-                    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 0), enemyMat);
-                    core.position.y = 2.1;
-                    core.castShadow = true;
-                    this.group.add(core);
-                } else {
-                    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(1.9), enemyMat);
-                    body.position.y = 2.1;
-                    body.castShadow = true;
-                    this.group.add(body);
-                }
-            }
-
-            update(delta, playerPos) {
-                if (this.isDead) return;
-
-                if (this.isStaggered) {
-                    this.staggerTimer -= delta;
-                    if (this.staggerTimer <= 0) this.isStaggered = false;
-                    return;
+                const dist = this.mesh.position.distanceTo(targetPos);
+                if (dist < 32.0 && dist > 2.2) {
+                    this.mesh.lookAt(targetPos.x, this.mesh.position.y, targetPos.z);
+                    this.mesh.translateZ(3.8 * delta);
                 }
 
-                const enemyPos = this.group.position;
-                const dist = enemyPos.distanceTo(playerPos);
-
-                if (dist > 2.2) {
-                    const dir = new THREE.Vector3().subVectors(playerPos, enemyPos);
-                    dir.y = 0;
-                    dir.normalize();
-                    this.group.position.addScaledVector(dir, this.speed * delta);
-                    this.group.lookAt(playerPos.x, this.group.position.y, playerPos.z);
-                } else {
-                    if (this.attackCooldown <= 0) {
-                        this.attackPlayer();
-                        this.attackCooldown = 1.6;
+                if (dist <= 2.4 && this.attackCooldown <= 0) {
+                    this.attackCooldown = 1.8;
+                    if (GAME.isBlocking) {
+                        flashEffect('parry-flash');
+                        audio.playParrySound();
+                    } else {
+                        GAME.hp = Math.max(0, GAME.hp - 35);
+                        flashEffect('damage-flash');
+                        audio.playHit();
+                        updateHUD();
+                        if (GAME.hp <= 0) gameOver();
                     }
                 }
 
                 if (this.attackCooldown > 0) this.attackCooldown -= delta;
             }
 
-            attackPlayer() {
-                if (GAME.isDodging || GAME.inCar) return;
-
-                const dist = this.group.position.distanceTo(playerGroup.position);
-                if (dist < 2.5) {
-                    if (GAME.isParrying) {
-                        audio.playParrySound();
-                        triggerParryFlash();
-                        this.isStaggered = true;
-                        this.staggerTimer = 2.5;
-                        return;
-                    }
-
-                    let dmg = this.type === 2 ? 38 : 22;
-                    if (GAME.isBlocking) {
-                        dmg = Math.round(dmg * 0.2);
-                        audio.playHitSound();
-                    } else {
-                        audio.playPlayerHurt();
-                        triggerDamageFlash();
-                    }
-
-                    GAME.hp = Math.max(0, GAME.hp - dmg);
-                    updateHUD();
-
-                    if (GAME.hp <= 0) triggerGameOver();
-                }
-            }
-
             takeDamage(amount) {
-                if (this.isStaggered) amount *= 2.0;
-
+                if (!this.alive) return;
                 this.hp -= amount;
-                audio.playHitSound();
-                createParticles(this.group.position, 0xee0033);
-                spawnDamageText(amount, this.group.position);
-
-                if (this.hp <= 0) this.die();
-            }
-
-            die() {
-                this.isDead = true;
-                scene.remove(this.group);
-                GAME.souls += 35;
-                updateHUD();
-
-                // Check Courtyard Cleared
-                const remaining = enemies.filter(e => !e.isDead);
-                if (remaining.length === 0 && GAME.phase === 'COURTYARD') {
-                    highlightDoorway();
+                audio.playHit();
+                if (this.hp <= 0) {
+                    this.alive = false;
+                    this.mesh.visible = false;
+                    GAME.souls += 100;
+                    updateHUD();
+                    checkPhaseProgress();
                 }
             }
         }
 
-        function spawnCourtyardEnemies() {
-            for (let i = 0; i < 6; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 15 + Math.random() * 25;
-                enemies.push(new AbstractEnemy(Math.floor(Math.random() * 3), Math.sin(angle) * dist, 0, Math.cos(angle) * dist));
-            }
-        }
-        spawnCourtyardEnemies();
+        // Spawn Initial Courtyard Enemies
+        const courtyardEnemies = [
+            new Enemy(courtyardGroup, -18, -20),
+            new Enemy(courtyardGroup, 18, -20),
+            new Enemy(courtyardGroup, 0, -50)
+        ];
+        enemies.push(...courtyardEnemies);
 
-        function spawnCastleGuards() {
-            for (let i = 0; i < 8; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 6 + Math.random() * 15;
-                enemies.push(new AbstractEnemy(Math.floor(Math.random() * 3), Math.sin(angle) * dist, 12, -850 + Math.cos(angle) * dist));
-            }
-        }
-
-        /*
-         * ====================================================================
-         * 12. PARTICLES & VISUAL DAMAGE FEEDBACK
-         * ====================================================================
-         */
-        const particles = [];
-        function createParticles(pos, colorHex) {
-            const pGeo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
-            const pMat = new THREE.MeshBasicMaterial({ color: colorHex });
-            for (let i = 0; i < 16; i++) {
-                const mesh = new THREE.Mesh(pGeo, pMat);
-                mesh.position.copy(pos);
-                mesh.position.y += 1.4;
-                const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 7,
-                    Math.random() * 6 + 1.5,
-                    (Math.random() - 0.5) * 7
-                );
-                scene.add(mesh);
-                particles.push({ mesh, vel, life: 0.45 });
+        function checkPhaseProgress() {
+            if (GAME.phase === 'COURTYARD') {
+                const remaining = courtyardEnemies.filter(e => e.alive).length;
+                if (remaining === 0) {
+                    GAME.courtyardCleared = true;
+                    document.getElementById('objective-banner').innerText = "OBJECTIVE: PROCEED THROUGH THE GATE TO THE FOREST";
+                    exitGate.position.y = -10; // Lower gate barrier
+                }
             }
         }
 
-        function spawnDamageText(amount, worldPos) {
-            const screenPos = worldPos.clone();
-            screenPos.y += 2.4;
-            screenPos.project(camera);
-            const x = (screenPos.x * .5 + .5) * window.innerWidth;
-            const y = (-(screenPos.y * .5) + .5) * window.innerHeight;
-
-            const el = document.createElement('div');
-            el.className = 'damage-text';
-            el.innerText = `-${amount}`;
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
-            container.appendChild(el);
-
-            setTimeout(() => {
-                el.style.transform = 'translateY(-45px)';
-                el.style.opacity = '0';
-            }, 50);
-
-            setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 650);
-        }
-
-        function triggerDamageFlash() {
-            const el = document.getElementById('damage-flash');
+        function flashEffect(id) {
+            const el = document.getElementById(id);
             el.style.opacity = '1';
-            setTimeout(() => { el.style.opacity = '0'; }, 150);
-        }
-
-        function triggerParryFlash() {
-            const el = document.getElementById('parry-flash');
-            el.style.opacity = '1';
-            setTimeout(() => { el.style.opacity = '0'; }, 120);
+            setTimeout(() => { el.style.opacity = '0'; }, 100);
         }
 
         function updateHUD() {
-            document.getElementById('hp-fill').style.width = `${(GAME.hp / GAME.maxHp) * 100}%`;
-            document.getElementById('hp-text').innerText = `${Math.round(GAME.hp)}/${GAME.maxHp}`;
-
-            document.getElementById('stamina-fill').style.width = `${(GAME.stamina / GAME.maxStamina) * 100}%`;
-            document.getElementById('stamina-text').innerText = `${Math.round(GAME.stamina)}/${GAME.maxStamina}`;
-
+            document.getElementById('hp-fill').style.width = (GAME.hp / GAME.maxHp * 100) + '%';
+            document.getElementById('hp-text').innerText = `${Math.ceil(GAME.hp)}/${GAME.maxHp}`;
+            document.getElementById('stamina-fill').style.width = (GAME.stamina / GAME.maxStamina * 100) + '%';
+            document.getElementById('stamina-text').innerText = `${Math.ceil(GAME.stamina)}/${GAME.maxStamina}`;
             document.getElementById('souls-val').innerText = GAME.souls;
         }
 
-        /*
-         * ====================================================================
-         * 13. PHASE TRANSITIONS (COURTYARD -> FOREST -> CASTLE)
-         * ====================================================================
-         */
-        function transitionToForest() {
-            GAME.phase = 'FOREST';
-            courtyardGroup.visible = false;
-            forestGroup.visible = true;
+        /* ==========================================================================
+           12. INPUT CONTROLLERS & EVENT LISTENERS
+           ========================================================================== */
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
 
-            playerGroup.position.set(0, CONFIG.playerHeight, -150);
-            document.getElementById('objective-banner').innerText = "OBJECTIVE: ENTER THE DARK CAR AND DRIVE TO THE CASTLE";
+            // Toggle Camera Perspective
+            if (e.code === 'KeyC') {
+                GAME.isThirdPerson = !GAME.isThirdPerson;
+                updateCameraPerspective();
+            }
+
+            // Vehicle Interaction (Toggle Car)
+            if (e.code === 'ControlLeft' || e.code === 'ControlRight' || e.code === 'KeyE') {
+                toggleCarState();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => { 
+            keys[e.code] = false; 
+        });
+
+        let pitch = 0, yaw = 0;
+        window.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement !== document.body || GAME.inCar) return;
+            yaw -= e.movementX * 0.002;
+            pitch -= e.movementY * 0.002;
+            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+            playerGroup.rotation.y = yaw;
+            cameraContainer.rotation.x = pitch;
+        });
+
+        // Mouse Action Event Handlers
+        window.addEventListener('mousedown', (e) => {
+            if (!GAME.active || GAME.inCar) return;
+            if (e.button === 0) { // Left Click: Sword Swing
+                if (GAME.stamina >= 20) {
+                    GAME.stamina -= 20;
+                    audio.playSwing();
+                    swordGroup.rotation.z = -1.2;
+                    setTimeout(() => { swordGroup.rotation.z = 0; }, 200);
+
+                    // Range Check Enemy Hits
+                    enemies.forEach(enemy => {
+                        if (enemy.alive) {
+                            const dist = playerGroup.position.distanceTo(enemy.mesh.position);
+                            if (dist < 3.8) enemy.takeDamage(CONFIG.baseDamage);
+                        }
+                    });
+                    updateHUD();
+                }
+            } else if (e.button === 2) { // Right Click: Shield/Parry Guard
+                GAME.isBlocking = true;
+                document.getElementById('crosshair').classList.add('blocking');
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (e.button === 2) {
+                GAME.isBlocking = false;
+                document.getElementById('crosshair').classList.remove('blocking');
+            }
+        });
+
+        function toggleCarState() {
+            if (GAME.phase !== 'FOREST') return;
+
+            const carWorldPos = new THREE.Vector3();
+            carGroup.getWorldPosition(carWorldPos);
+            const dist = playerGroup.position.distanceTo(carWorldPos);
+
+            if (!GAME.inCar && dist < 6.0) {
+                // Board Vehicle
+                GAME.inCar = true;
+                playerGroup.visible = false;
+                document.getElementById('car-hud').style.display = 'block';
+                document.getElementById('interaction-prompt').innerText = "PRESS [CTRL] OR [E] TO EXIT CAR";
+            } else if (GAME.inCar) {
+                // Exit Vehicle
+                GAME.inCar = false;
+                playerGroup.visible = true;
+                playerGroup.position.copy(carWorldPos).add(new THREE.Vector3(3, 0, 0));
+                audio.stopEngineSound();
+                document.getElementById('car-hud').style.display = 'none';
+                document.getElementById('interaction-prompt').innerText = "PRESS [CTRL] OR [E] TO ENTER CAR";
+            }
         }
 
-        function transitionToCastle() {
-            GAME.phase = 'CASTLE';
-            if (GAME.inCar) exitCar();
+        /* ==========================================================================
+           13. MAIN GAME TICK & RENDER LOOP
+           ========================================================================== */
+        let lastTime = performance.now();
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!GAME.active) return;
 
-            forestGroup.visible = false;
-            castleGroup.visible = true;
+            const now = performance.now();
+            const delta = Math.min((now - lastTime) / 1000, 0.1);
+            lastTime = now;
 
-            playerGroup.position.set(0, 13.8, -835);
-            document.getElementById('objective-banner').innerText = "OBJECTIVE: VANQUISH CASTLE GUARDS & SAVE THE PRINCESS";
+            // Regenerate Player Stamina
+            if (!GAME.isBlocking && GAME.stamina < GAME.maxStamina) {
+                GAME.stamina = Math.min(GAME.maxStamina, GAME.stamina + CONFIG.staminaRegen * delta);
+                updateHUD();
+            }
 
-            spawnCastleGuards();
+            if (GAME.inCar) {
+                // Driving & Acceleration Handling
+                let targetMaxSpeed = 45; // Standard Cruise Speed
+                if (keys['ShiftLeft'] || keys['ShiftRight']) {
+                    targetMaxSpeed = 80; // Nitro Boost Speed
+                }
+
+                if (keys['KeyW']) {
+                    GAME.carSpeed = THREE.MathUtils.lerp(GAME.carSpeed, targetMaxSpeed, delta * 1.5);
+                } else if (keys['KeyS']) {
+                    GAME.carSpeed = THREE.MathUtils.lerp(GAME.carSpeed, -20, delta * 2.0);
+                } else {
+                    GAME.carSpeed = THREE.MathUtils.lerp(GAME.carSpeed, 0, delta * 1.0);
+                }
+
+                if (keys['KeyA']) carGroup.rotation.y += 1.2 * delta;
+                if (keys['KeyD']) carGroup.rotation.y -= 1.2 * delta;
+
+                carGroup.translateZ(-GAME.carSpeed * delta * 0.45);
+
+                // Driving Camera Orbit
+                const carCamPos = carGroup.position.clone().add(new THREE.Vector3(0, 4, 8).applyQuaternion(carGroup.quaternion));
+                camera.position.copy(carCamPos);
+                camera.lookAt(carGroup.position.clone().add(new THREE.Vector3(0, 1.5, -5).applyQuaternion(carGroup.quaternion)));
+
+                // HUD Speedometer Update
+                const currentMPH = Math.round(Math.abs(GAME.carSpeed));
+                document.getElementById('speed-val').innerText = currentMPH;
+                audio.playEngineSound(currentMPH / 80);
+
+                // Transition Check to Royal Castle
+                const carWorldPos = new THREE.Vector3();
+                carGroup.getWorldPosition(carWorldPos);
+                if (carWorldPos.z < -320) {
+                    GAME.phase = 'CASTLE';
+                    forestGroup.visible = false;
+                    castleGroup.visible = true;
+                    GAME.inCar = false;
+                    audio.stopEngineSound();
+                    document.getElementById('car-hud').style.display = 'none';
+                    playerGroup.visible = true;
+                    playerGroup.position.set(0, CONFIG.playerHeight, 38);
+                    document.getElementById('objective-banner').innerText = "OBJECTIVE: RESCUE THE PRINCESS";
+                }
+
+            } else {
+                // Player Foot Movement Dynamics
+                let moveSpeed = CONFIG.playerSpeed;
+                if (keys['ShiftLeft'] || keys['ShiftRight']) moveSpeed *= CONFIG.sprintMultiplier;
+
+                if (keys['KeyW']) playerGroup.translateZ(-moveSpeed * delta);
+                if (keys['KeyS']) playerGroup.translateZ(moveSpeed * delta);
+                if (keys['KeyA']) playerGroup.translateX(-moveSpeed * delta);
+                if (keys['KeyD']) playerGroup.translateX(moveSpeed * delta);
+
+                // Phase 1 -> Phase 2 Transition Logic
+                if (GAME.phase === 'COURTYARD' && GAME.courtyardCleared && playerGroup.position.z < -75) {
+                    GAME.phase = 'FOREST';
+                    courtyardGroup.visible = false;
+                    forestGroup.visible = true;
+                    playerGroup.position.set(0, CONFIG.playerHeight, 350);
+                    document.getElementById('objective-banner').innerText = "OBJECTIVE: DRIVE THROUGH THE FOREST TO THE ROYAL CASTLE";
+                }
+
+                // Interaction Checks in Forest Mode
+                if (GAME.phase === 'FOREST') {
+                    const carWorldPos = new THREE.Vector3();
+                    carGroup.getWorldPosition(carWorldPos);
+                    const dist = playerGroup.position.distanceTo(carWorldPos);
+                    const prompt = document.getElementById('interaction-prompt');
+
+                    if (dist < 6.0) {
+                        prompt.style.display = 'block';
+                        prompt.innerText = "PRESS [CTRL] OR [E] TO ENTER CAR";
+                    } else {
+                        prompt.style.display = 'none';
+                    }
+                } else if (GAME.phase === 'CASTLE') {
+                    // Check Victory Proximity to Princess
+                    if (playerGroup.position.distanceTo(princessGroup.position) < 4.5) {
+                        triggerVictory();
+                    }
+                }
+
+                // Update Active Enemy AI
+                enemies.forEach(enemy => enemy.update(delta, playerGroup.position));
+            }
+
+            renderer.render(scene, camera);
         }
 
+        /* ==========================================================================
+           14. ENDGAME STATES & INTERFACE HANDLERS
+           ========================================================================== */
         function triggerVictory() {
-            GAME.phase = 'VICTORY';
             GAME.active = false;
             document.exitPointerLock();
             document.getElementById('victory-souls').innerText = GAME.souls;
             document.getElementById('victory-modal').style.display = 'block';
         }
 
-        /*
-         * ====================================================================
-         * 14. DRIVING ENGINE & CAR CONTROLS
-         * ====================================================================
-         */
-        function enterCar() {
-            GAME.inCar = true;
-            knightModel.visible = false;
-            swordGroup.visible = false;
-            document.getElementById('car-hud').style.display = 'block';
-            document.getElementById('objective-banner').innerText = "OBJECTIVE: DRIVE DOWN THE FOREST ROAD TO THE IMPERIAL CASTLE";
+        function gameOver() {
+            GAME.active = false;
+            document.exitPointerLock();
+            document.getElementById('death-modal').style.display = 'block';
         }
 
-        function exitCar() {
-            GAME.inCar = false;
-            audio.stopEngineSound();
-            if (GAME.isThirdPerson) knightModel.visible = true;
-            swordGroup.visible = true;
-            document.getElementById('car-hud').style.display = 'none';
-        }
-
-        function updateDriving(delta) {
-            const accel = 35.0;
-            const maxSpeed = 80.0;
-            const friction = 0.96;
-
-            if (keys['KeyW']) GAME.carSpeed = Math.min(maxSpeed, GAME.carSpeed + accel * delta);
-            else if (keys['KeyS']) GAME.carSpeed = Math.max(-maxSpeed * 0.4, GAME.carSpeed - accel * delta);
-            else GAME.carSpeed *= friction;
-
-            if (keys['KeyA']) GAME.steeringAngle = Math.min(0.4, GAME.steeringAngle + 2.0 * delta);
-            else if (keys['KeyD']) GAME.steeringAngle = Math.max(-0.4, GAME.steeringAngle - 2.0 * delta);
-            else GAME.steeringAngle *= 0.8;
-
-            carGroup.rotation.y += GAME.steeringAngle * (GAME.carSpeed / maxSpeed) * delta * 2.0;
-            carGroup.translateZ(-GAME.carSpeed * delta);
-
-            // Sync Player/Camera Position to Car
-            playerGroup.position.copy(carGroup.position);
-            playerGroup.position.y += 1.8;
-            playerGroup.rotation.y = carGroup.rotation.y;
-
-            audio.playEngineSound(Math.abs(GAME.carSpeed) / maxSpeed);
-            document.getElementById('speed-val').innerText = Math.round(Math.abs(GAME.carSpeed));
-
-            // Reach Castle Threshold
-            if (carGroup.position.z <= -450 && GAME.phase === 'FOREST') {
-                transitionToCastle();
-            }
-        }
-
-        /*
-         * ====================================================================
-         * 15. INPUT CONTROLS & EVENT LISTENERS
-         * ====================================================================
-         */
-        const keys = {};
-        let yaw = 0;
-        let pitch = 0;
-        let velocityY = 0;
-        let isGrounded = true;
-
-        document.addEventListener('keydown', (e) => {
-            keys[e.code] = true;
-
-            if (e.code === 'KeyC') {
-                GAME.isThirdPerson = !GAME.isThirdPerson;
-                updateCameraPerspective();
-            }
-            if (e.code === 'AltLeft' || e.code === 'KeyN') performDodgeRoll();
-            if (e.code === 'KeyE') handleInteraction();
-            if (e.code === 'Tab') { e.preventDefault(); toggleLockOn(); }
+        // Modal Button Control Events
+        document.getElementById('start-btn').addEventListener('click', () => {
+            audio.init();
+            document.body.requestPointerLock();
+            GAME.active = true;
+            document.getElementById('start-modal').style.display = 'none';
+            animate();
         });
-
-        document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
         document.getElementById('cam-toggle-btn').addEventListener('click', () => {
             GAME.isThirdPerson = !GAME.isThirdPerson;
             updateCameraPerspective();
         });
 
-        document.getElementById('start-btn').addEventListener('click', () => {
-            audio.init();
-            audio.playAmbientDrone();
-            container.requestPointerLock();
+        document.getElementById('restart-btn').addEventListener('click', () => { 
+            window.location.reload(); 
         });
 
-        document.getElementById('restart-btn').addEventListener('click', () => { location.reload(); });
-        document.getElementById('victory-restart-btn').addEventListener('click', () => { location.reload(); });
-
-        document.addEventListener('pointerlockchange', () => {
-            if (document.pointerLockElement === container) {
-                GAME.active = true;
-                document.getElementById('start-modal').style.display = 'none';
-                document.getElementById('death-modal').style.display = 'none';
-            } else {
-                GAME.active = false;
-                if (GAME.hp > 0 && GAME.phase !== 'VICTORY') {
-                    document.getElementById('start-modal').style.display = 'block';
-                }
-            }
+        document.getElementById('victory-restart-btn').addEventListener('click', () => { 
+            window.location.reload(); 
         });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!GAME.active || GAME.lockTarget || GAME.inCar) return;
-            const sens = 0.0022;
-            yaw -= e.movementX * sens;
-            pitch -= e.movementY * sens;
-            pitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, pitch));
-
-            playerGroup.rotation.y = yaw;
-            cameraContainer.rotation.x = pitch;
-        });
-
-        document.addEventListener('mousedown', (e) => {
-            if (!GAME.active || GAME.inCar) return;
-
-            if (e.button === 0 && !GAME.isAttacking && !GAME.isDodging) {
-                if (GAME.stamina >= CONFIG.staminaAttackCost) {
-                    triggerFullSwordSlashCombo();
-                }
-            } else if (e.button === 2) {
-                GAME.isBlocking = true;
-                GAME.isParrying = true;
-                document.getElementById('crosshair').classList.add('blocking');
-                setTimeout(() => { GAME.isParrying = false; }, 220);
-            }
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (e.button === 2) {
-                GAME.isBlocking = false;
-                GAME.isParrying = false;
-                document.getElementById('crosshair').classList.remove('blocking');
-            }
-        });
-
-        window.addEventListener('contextmenu', (e) => e.preventDefault());
-
-        function handleInteraction() {
-            const pPos = playerGroup.position;
-
-            // Doorway Transition
-            if (GAME.phase === 'COURTYARD' && GAME.courtyardCleared) {
-                if (pPos.distanceTo(doorFrame.position) < 6.0) {
-                    transitionToForest();
-                }
-            }
-            // Enter Forest Car
-            else if (GAME.phase === 'FOREST' && !GAME.inCar) {
-                if (pPos.distanceTo(carGroup.position) < 5.0) {
-                    enterCar();
-                }
-            }
-        }
-
-        /* 3X TRIPLE SWORD DAMAGE ATTACK SYSTEM */
-        function triggerFullSwordSlashCombo() {
-            GAME.isAttacking = true;
-            GAME.attackProgress = 0;
-            GAME.stamina = Math.max(0, GAME.stamina - CONFIG.staminaAttackCost);
-            updateHUD();
-
-            audio.playSwordSwing();
-
-            GAME.attackComboStep = (GAME.attackComboStep + 1) % 3;
-
-            slashTrailMat.opacity = 0.9;
-            slashTrailMesh.rotation.z = GAME.attackComboStep * 1.25;
-
-            const attackRange = 4.0;
-            const pPos = playerGroup.position;
-
-            enemies.forEach(enemy => {
-                if (enemy.isDead) return;
-                if (pPos.distanceTo(enemy.group.position) <= attackRange) {
-                    const comboMultiplier = 1.0 + (GAME.attackComboStep * 0.35);
-                    const finalDmg = Math.round(GAME.damage * comboMultiplier);
-                    enemy.takeDamage(finalDmg);
-                }
-            });
-
-            // Save Princess Interaction Trigger
-            if (GAME.phase === 'CASTLE') {
-                const remaining = enemies.filter(e => !e.isDead);
-                if (remaining.length === 0 && pPos.distanceTo(princessGroup.position) < 4.0) {
-                    triggerVictory();
-                }
-            }
-        }
-
-        function performDodgeRoll() {
-            if (GAME.isDodging || GAME.stamina < CONFIG.staminaRollCost || GAME.inCar) return;
-            GAME.isDodging = true;
-            GAME.dodgeTimer = 0;
-            GAME.stamina -= CONFIG.staminaRollCost;
-            updateHUD();
-        }
-
-        function toggleLockOn() {
-            if (GAME.lockTarget) {
-                GAME.lockTarget = null;
-                document.getElementById('lockon-reticle').style.display = 'none';
-            } else {
-                let closest = null;
-                let minDist = 28;
-                enemies.forEach(e => {
-                    if (e.isDead) return;
-                    const d = playerGroup.position.distanceTo(e.group.position);
-                    if (d < minDist) {
-                        minDist = d;
-                        closest = e;
-                    }
-                });
-                if (closest) {
-                    GAME.lockTarget = closest;
-                    document.getElementById('lockon-reticle').style.display = 'block';
-                }
-            }
-        }
-
-        function updateLockOnReticle() {
-            if (!GAME.lockTarget || GAME.lockTarget.isDead) {
-                GAME.lockTarget = null;
-                document.getElementById('lockon-reticle').style.display = 'none';
-                return;
-            }
-
-            const targetPos = GAME.lockTarget.group.position.clone();
-            targetPos.y += 1.7;
-
-            playerGroup.lookAt(targetPos.x, playerGroup.position.y, targetPos.z);
-            yaw = playerGroup.rotation.y;
-
-            targetPos.project(camera);
-            const x = (targetPos.x * .5 + .5) * window.innerWidth;
-            const y = (-(targetPos.y * .5) + .5) * window.innerHeight;
-
-            const reticle = document.getElementById('lockon-reticle');
-            reticle.style.left = `${x}px`;
-            reticle.style.top = `${y}px`;
-        }
-
-        function triggerGameOver() {
-            GAME.active = false;
-            document.exitPointerLock();
-            document.getElementById('death-modal').style.display = 'block';
-        }
-
-        /*
-         * ====================================================================
-         * 16. MAIN ANIMATION & RENDER LOOP
-         * ====================================================================
-         */
-        const clock = new THREE.Clock();
-        let stepSoundTimer = 0;
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            const delta = Math.min(clock.getDelta(), 0.1);
-
-            if (GAME.active) {
-                if (GAME.inCar) {
-                    updateDriving(delta);
-                } else {
-                    // On-Foot Movement
-                    const speedMult = keys['ShiftLeft'] ? CONFIG.sprintMultiplier : 1.0;
-                    const currentSpeed = CONFIG.playerSpeed * speedMult * delta;
-
-                    const moveDir = new THREE.Vector3();
-                    if (keys['KeyW']) moveDir.z -= 1;
-                    if (keys['KeyS']) moveDir.z += 1;
-                    if (keys['KeyA']) moveDir.x -= 1;
-                    if (keys['KeyD']) moveDir.x += 1;
-
-                    moveDir.normalize();
-                    moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                    playerGroup.position.addScaledVector(moveDir, currentSpeed);
-
-                    if (moveDir.length() > 0 && isGrounded) {
-                        stepSoundTimer += delta;
-                        if (stepSoundTimer > 0.38 / speedMult) {
-                            audio.playFootstep();
-                            stepSoundTimer = 0;
-                        }
-                    }
-
-                    // Jump Physics
-                    if (keys['Space'] && isGrounded) {
-                        velocityY = CONFIG.jumpForce;
-                        isGrounded = false;
-                    }
-
-                    velocityY -= CONFIG.gravity * delta;
-                    playerGroup.position.y += velocityY * delta;
-
-                    const groundHeight = GAME.phase === 'CASTLE' ? 13.8 : CONFIG.playerHeight;
-                    if (playerGroup.position.y <= groundHeight) {
-                        playerGroup.position.y = groundHeight;
-                        velocityY = 0;
-                        isGrounded = true;
-                    }
-
-                    // Dodge Roll Dynamics
-                    if (GAME.isDodging) {
-                        GAME.dodgeTimer += delta * 6.5;
-                        cameraContainer.rotation.z = Math.sin(GAME.dodgeTimer) * 0.25;
-                        if (GAME.dodgeTimer >= Math.PI) {
-                            GAME.isDodging = false;
-                            cameraContainer.rotation.z = 0;
-                        }
-                    }
-
-                    // Sword Attack Animation
-                    if (GAME.isAttacking) {
-                        GAME.attackProgress += delta * 8.0;
-
-                        if (slashTrailMat.opacity > 0) slashTrailMat.opacity -= delta * 2.8;
-
-                        if (GAME.attackComboStep === 0) {
-                            swordGroup.position.x = 0.5 - Math.sin(GAME.attackProgress) * 1.5;
-                            swordGroup.rotation.z = -Math.sin(GAME.attackProgress) * 2.9;
-                        } else if (GAME.attackComboStep === 1) {
-                            swordGroup.position.x = -0.6 + Math.sin(GAME.attackProgress) * 1.5;
-                            swordGroup.rotation.z = Math.sin(GAME.attackProgress) * 2.6;
-                        } else {
-                            swordGroup.rotation.x = -1.8 + Math.sin(GAME.attackProgress) * 3.4;
-                        }
-
-                        if (GAME.attackProgress >= Math.PI) {
-                            GAME.isAttacking = false;
-                            slashTrailMat.opacity = 0;
-                            swordGroup.rotation.set(0.2, -0.25, -0.15);
-                            swordGroup.position.set(0.48, -0.42, -0.68);
-                        }
-                    } else if (GAME.isBlocking) {
-                        swordGroup.position.set(0.0, -0.25, -0.45);
-                        swordGroup.rotation.set(0.4, 0.9, -1.2);
-                    }
-                }
-
-                // Interaction Prompts Dynamic Check
-                const pPos = playerGroup.position;
-                const prompt = document.getElementById('interaction-prompt');
-
-                if (GAME.phase === 'COURTYARD' && GAME.courtyardCleared && pPos.distanceTo(doorFrame.position) < 7.0) {
-                    prompt.innerText = "PRESS [E] TO PASS THROUGH DOORWAY";
-                    prompt.style.display = 'block';
-                } else if (GAME.phase === 'FOREST' && !GAME.inCar && pPos.distanceTo(carGroup.position) < 5.0) {
-                    prompt.innerText = "PRESS [E] TO DRIVE CAR";
-                    prompt.style.display = 'block';
-                } else if (GAME.phase === 'CASTLE' && pPos.distanceTo(princessGroup.position) < 4.0) {
-                    prompt.innerText = "ATTACK TO RESCUE THE PRINCESS";
-                    prompt.style.display = 'block';
-                } else {
-                    prompt.style.display = 'none';
-                }
-
-                // Stamina Regeneration
-                if (!GAME.isAttacking && !GAME.isBlocking && !GAME.isDodging) {
-                    GAME.stamina = Math.min(GAME.maxStamina, GAME.stamina + CONFIG.staminaRegen * delta);
-                }
-                updateHUD();
-
-                updateLockOnReticle();
-
-                // Update Entities & Particles
-                enemies.forEach(enemy => enemy.update(delta, playerGroup.position));
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const p = particles[i];
-                    p.life -= delta;
-                    p.mesh.position.addScaledVector(p.vel, delta);
-                    if (p.life <= 0) {
-                        scene.remove(p.mesh);
-                        particles.splice(i, 1);
-                    }
-                }
-            }
-
-            renderer.render(scene, camera);
-        }
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        animate();
     </script>
 </body>
 </html>
